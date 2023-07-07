@@ -6,9 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "reset": "rm -f package-lock.json && rm -rf ./node_modules && npm install --no-fund --no-audit",
+    "reset-win": "del /s /q package-lock.json && echo 'Borrando node_modules...' && rmdir /s /q node_modules && cls && echo 'Instalando Dependencias' && npm install --no-fund --no-audit",
+    "supa:dev": "npx supabase start",
+    "supa:stop": "npx supabase stop",
+    "supa:gentypes": "npx supabase gen types typescript --local > src/lib/supabase/types.ts",
+    "supa:remotetypes": "npx supabase gen types typescript --project-id kfyzyoupthjxuidzbvxr > src/lib/supabase/types.ts"
   },
   "dependencies": {
+    "@supabase/auth-helpers-nextjs": "^0.7.2",
+    "@supabase/auth-helpers-react": "^0.4.0",
+    "@supabase/supabase-js": "^2.26.0",
     "@types/node": "20.4.0",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
@@ -22,6 +31,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.25",
+    "supabase": "^1.75.3",
     "tailwindcss": "^3.3.2"
   }
 }
