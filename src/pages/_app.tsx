@@ -5,6 +5,7 @@ import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { Database } from "@/lib/supabase/types";
 import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
@@ -24,6 +25,7 @@ export default function App({ Component, pageProps }: AppProps) {
       >
         <MantineProvider withCSSVariables withGlobalStyles withNormalizeCSS>
           <Component {...pageProps} />
+          <Notifications />
         </MantineProvider>
       </SessionContextProvider>
     </>
