@@ -1,14 +1,3 @@
-import {
-  Button,
-  Flex,
-  Heading,
-  IconButton,
-  Input,
-  InputGroup,
-  InputRightElement,
-  chakra,
-  useToast,
-} from "@chakra-ui/react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import { useRouter } from "next/router";
@@ -16,7 +5,6 @@ import { FormEvent, useRef, useState } from "react";
 
 export default function Login() {
   const supabase = useSupabaseClient();
-  const toast = useToast();
   const router = useRouter();
 
   const emailRef = useRef<HTMLInputElement>(null);
