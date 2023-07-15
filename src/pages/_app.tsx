@@ -4,6 +4,7 @@ import type { AppProps } from "next/app";
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { Database } from "@/lib/supabase/types";
+import { MantineProvider } from "@mantine/core";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [supabaseClient] = useState(() => createPagesBrowserClient<Database>());
@@ -12,13 +13,18 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <Head>
         <title>Club12</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+        />
       </Head>
       <SessionContextProvider
         supabaseClient={supabaseClient}
         initialSession={pageProps.initialSession}
       >
-        <Component {...pageProps} />
+        <MantineProvider withCSSVariables withGlobalStyles withNormalizeCSS>
+          <Component {...pageProps} />
+        </MantineProvider>
       </SessionContextProvider>
     </>
   );
