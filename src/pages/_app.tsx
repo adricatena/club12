@@ -23,7 +23,7 @@ export default function App({ Component, pageProps }: AppProps) {
         supabaseClient={supabaseClient}
         initialSession={pageProps.initialSession}
       >
-        <MantineProvider withCSSVariables withGlobalStyles withNormalizeCSS>
+        <MantineProvider withGlobalStyles withNormalizeCSS>
           <Component {...pageProps} />
           <Notifications />
         </MantineProvider>

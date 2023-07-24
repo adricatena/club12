@@ -2,12 +2,18 @@ import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import toast from "@/components/toast";
-import style from "./login.module.css";
-import { Button, PasswordInput, TextInput, Title } from "@mantine/core";
+import {
+  Button,
+  PasswordInput,
+  TextInput,
+  Title,
+  createStyles,
+} from "@mantine/core";
 
 export default function Login() {
   const supabase = useSupabaseClient();
   const router = useRouter();
+  const { classes } = useClasses();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,20 +43,20 @@ export default function Login() {
   }
 
   return (
-    <main className={style.main}>
+    <main className={classes.main}>
       <Title order={1}>Club 12</Title>
-      <form className={style.form} onSubmit={handleSubmit}>
+      <form className={classes.form} onSubmit={handleSubmit}>
         <TextInput
           type="email"
           label="Ingrese su email"
           placeholder="club@12.com.ar"
-          className={style.input}
+          className={classes.input}
           ref={emailRef}
         />
         <PasswordInput
           label="Ingrese su contraseña"
           placeholder="password123"
-          className={style.input}
+          className={classes.input}
           ref={passwordRef}
         />
         <Button type="submit" disabled={isLoading}>
@@ -60,3 +66,27 @@ export default function Login() {
     </main>
   );
 }
+
+const useClasses = createStyles((theme) => ({
+  main: {
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.md,
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.lg,
+    width: "100%",
+    maxWidth: Number(theme.breakpoints.xs) / 2,
+    padding: theme.spacing.sm,
+  },
+  input: {
+    width: "100%",
+  },
+}));
