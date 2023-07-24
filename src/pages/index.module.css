@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  place-items: center;
+}
+
+.basket {
+  color: var(--mantine-color-orange-7);
+  display: "flex";
+  align-items: center;
+  justify-content: center;
+}
+
+.basketFem {
+  color: var(--mantine-color-grape-6);
+  display: "flex";
+  align-items: center;
+  justify-content: center;
+}
+
+.futbol7 {
+  color: var(--mantine-color-cyan-9);
+  display: "flex";
+  align-items: center;
+  justify-content: center;
+}
+
+.futbol11 {
+  color: var(--mantine-color-green-9);
+  display: "flex";
+  align-items: center;
+  justify-content: center;
+}

@@ -1,3 +1,41 @@
+# Supabase
+
+## Login
+
+- `npx supabase login` => va a pedir un token que el admin debe dar
+
+## Iniciar proyectos ya creados
+
+### Iniciar/Parar docker
+
+- `npx supabase start` o `npx supabase stop`
+
+## Migraciones
+
+### Crear migracion
+
+- `npx supabase db diff -f <nombre_del_archivo>` => crea un nuevo archivo de migracion
+
+### Observar cambios locales sin guardar en archivo
+
+`npx supabase db diff --schema public`
+
+### Deploy a DB remota
+
+- `npx supabase db push` => debe estar previamente linkeado con el proyecto remoto
+
+## Para crear proyectos supabase
+
+### Crear proyecto local
+
+- `npx supabase init` => podes crear o no un workspace
+
+### Linkear con proyecto remoto
+
+- `npx supabase link --project-ref [id-de-proyecto]` => va a pedir el password de la base de datos
+
+# NextJs
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
