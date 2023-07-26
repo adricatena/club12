@@ -83,7 +83,7 @@ const useClasses = createStyles((theme) => ({
     justifyContent: "center",
     gap: theme.spacing.lg,
     width: "100%",
-    maxWidth: Number(theme.breakpoints.xs) / 2,
+    maxWidth: theme.breakpoints.xs,
     padding: theme.spacing.sm,
   },
   input: {
