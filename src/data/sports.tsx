@@ -11,7 +11,7 @@ type Route = {
 
 const iconSize = 110;
 
-export const routes = (theme: MantineTheme): Route[] => [
+export const sports = (theme: MantineTheme): Route[] => [
   {
     path: "/basket",
     label: "BASKET",

@@ -24,12 +24,12 @@ export default function Layout({
         </ULink>
 
         {breadcrumbs.map((breadcrumb) => (
-          <>
+          <span key={breadcrumb} className={classes.breadcrums}>
             <Title order={3}>/</Title>
             <ULink href={`/${breadcrumb}`}>
               <Title order={3}>{breadcrumb}</Title>
             </ULink>
-          </>
+          </span>
         ))}
       </header>
       {showNav ? (
@@ -60,6 +60,11 @@ const useClasses = createStyles((theme) => ({
     borderBottomStyle: "solid",
     borderBottomWidth: theme.radius.xs,
     borderBottomColor: theme.colors.gray[0],
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
+  breadcrums: {
     display: "flex",
     alignItems: "center",
     gap: theme.spacing.xs,

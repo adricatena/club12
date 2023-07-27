@@ -1,6 +1,6 @@
 import Layout from "@/components/layout";
 import { createStyles } from "@mantine/core";
-import { routes } from "@/data/routes";
+import { sports } from "@/data/sports";
 import Link from "next/link";
 
 export default function Home() {
@@ -9,14 +9,14 @@ export default function Home() {
   return (
     <Layout showNav={false}>
       <section className={classes.container}>
-        {routes(theme).map((route) => (
+        {sports(theme).map((sport) => (
           <Link
-            key={route.path}
-            href={route.path}
+            key={sport.path}
+            href={sport.path}
             className={classes.sport}
-            style={{ color: route.color }}
+            style={{ color: sport.color }}
           >
-            {route.icon} {route.label}
+            {sport.icon} {sport.label}
           </Link>
         ))}
       </section>
