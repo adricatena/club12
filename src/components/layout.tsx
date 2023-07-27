@@ -1,19 +1,16 @@
 import { ReactNode } from "react";
-import { NavLink, Title, createStyles } from "@mantine/core";
+import { NavLink, Title, createStyles, px, rem } from "@mantine/core";
 import Link from "next/link";
 import ULink from "./unstyled-link";
+import { pages } from "@/data/pages";
+import LogoutButton from "./logout-button";
 
 type Props = {
   breadcrumbs?: string[];
-  showNav?: boolean;
   children: ReactNode;
 };
 
-export default function Layout({
-  breadcrumbs = [""],
-  showNav = true,
-  children,
-}: Props) {
+export default function Layout({ breadcrumbs, children }: Props) {
   const { classes } = useClasses();
 
   return (
@@ -23,23 +20,35 @@ export default function Layout({
           <Title order={2}>Club 12</Title>
         </ULink>
 
-        {breadcrumbs.map((breadcrumb) => (
-          <span key={breadcrumb} className={classes.breadcrums}>
-            <Title order={3}>/</Title>
-            <ULink href={`/${breadcrumb}`}>
-              <Title order={3}>{breadcrumb}</Title>
-            </ULink>
-          </span>
-        ))}
+        {breadcrumbs
+          ? breadcrumbs.map((breadcrumb) => (
+              <span key={breadcrumb} className={classes.breadcrums}>
+                <Title order={3}>/</Title>
+                <ULink href={`/${breadcrumb.toLowerCase()}`}>
+                  <Title order={3}>{breadcrumb}</Title>
+                </ULink>
+              </span>
+            ))
+          : null}
       </header>
-      {showNav ? (
+      <aside className={classes.aside}>
         <nav className={classes.nav}>
-          <NavLink component={Link} href="/players" label="Jugadores" />
+          {pages.map((page) => (
+            <NavLink
+              key={page.label}
+              component={Link}
+              href={page.path}
+              label={page.label}
+              icon={page.icon}
+              classNames={{
+                icon: classes.navLinkIcon,
+              }}
+            />
+          ))}
         </nav>
-      ) : null}
-      <main className={`${classes.main} ${showNav ? classes.mainWithNav : ""}`}>
-        {children}
-      </main>
+        <LogoutButton />
+      </aside>
+      <main className={classes.main}>{children}</main>
     </div>
   );
 }
@@ -50,7 +59,7 @@ const useClasses = createStyles((theme) => ({
     display: "grid",
     gridTemplateRows: "min-content auto",
     gridTemplateColumns: "min-content auto",
-    gridTemplateAreas: `"header header" "nav main"`,
+    gridTemplateAreas: `"header header" "aside main"`,
   },
   header: {
     gridArea: "header",
@@ -69,17 +78,24 @@ const useClasses = createStyles((theme) => ({
     alignItems: "center",
     gap: theme.spacing.xs,
   },
-  nav: {
-    gridArea: "nav",
+  aside: {
+    gridArea: "aside",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-between",
     borderRightStyle: "solid",
     borderRightWidth: theme.radius.xs,
     borderRightColor: theme.colors.gray[0],
   },
+  nav: {
+    width: "100%",
+  },
+  navLinkIcon: {
+    marginRight: "0.4rem",
+  },
   main: {
     gridArea: "main",
-    marginTop: theme.spacing.xs,
-  },
-  mainWithNav: {
-    marginLeft: theme.spacing.sm,
+    margin: `${theme.spacing.xs} ${theme.spacing.sm}`,
   },
 }));
