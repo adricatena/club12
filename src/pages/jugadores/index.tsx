@@ -60,9 +60,6 @@ export default function Players({
             ref={searchPlayerRef}
           />
         </form>
-        <Button component={Link} href="/jugadores/crear" size="xs">
-          Crear jugador
-        </Button>
       </section>
       ACA VA UNA TABLA CON LOS JUGADORES
       {players

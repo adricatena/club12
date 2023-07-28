@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { NavLink, Title, createStyles, px, rem } from "@mantine/core";
 import Link from "next/link";
 import ULink from "./unstyled-link";
-import { pages } from "@/data/pages";
+import { navLinks } from "@/data/nav-links";
 import LogoutButton from "./logout-button";
 
 type Props = {
@@ -33,17 +33,24 @@ export default function Layout({ breadcrumbs, children }: Props) {
       </header>
       <aside className={classes.aside}>
         <nav className={classes.nav}>
-          {pages.map((page) => (
+          {navLinks.map((navLink) => (
             <NavLink
-              key={page.label}
-              component={Link}
-              href={page.path}
-              label={page.label}
-              icon={page.icon}
+              key={navLink.label}
+              label={navLink.label}
+              icon={navLink.icon}
               classNames={{
                 icon: classes.navLinkIcon,
               }}
-            />
+            >
+              {navLink.actions.map((action) => (
+                <NavLink
+                  key={action.label}
+                  component={Link}
+                  href={action.path}
+                  label={action.label}
+                />
+              ))}
+            </NavLink>
           ))}
         </nav>
         <LogoutButton />
