@@ -3,8 +3,6 @@ import { createServerClient } from "@/lib/supabase/clients";
 import { ActionIcon, Button, NumberInput, createStyles } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import Link from "next/link";
-import { useRouter } from "next/router";
 import { useRef } from "react";
 
 type Player = {

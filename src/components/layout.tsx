@@ -4,6 +4,7 @@ import Link from "next/link";
 import ULink from "./unstyled-link";
 import { navLinks } from "@/data/nav-links";
 import LogoutButton from "./logout-button";
+import { IconChevronRight } from "@tabler/icons-react";
 
 type Props = {
   breadcrumbs?: string[];
@@ -23,9 +24,9 @@ export default function Layout({ breadcrumbs, children }: Props) {
         {breadcrumbs
           ? breadcrumbs.map((breadcrumb) => (
               <span key={breadcrumb} className={classes.breadcrums}>
-                <Title order={3}>/</Title>
+                <IconChevronRight />
                 <ULink href={`/${breadcrumb.toLowerCase()}`}>
-                  <Title order={3}>{breadcrumb}</Title>
+                  <Title order={4}>{breadcrumb}</Title>
                 </ULink>
               </span>
             ))

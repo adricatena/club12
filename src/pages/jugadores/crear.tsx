@@ -1,20 +1,47 @@
 import Layout from "@/components/layout";
+import { createServerClient } from "@/lib/supabase/clients";
 import {
   ActionIcon,
   Avatar,
   Button,
   FileButton,
-  FileInput,
-  Image,
+  Flex,
   Input,
   NumberInput,
+  Switch,
   TextInput,
   createStyles,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
-import { FormEvent, useRef, useState } from "react";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { FormEvent, MouseEvent, useRef, useState } from "react";
 
-function CreatePlayer() {
+type Sport = {
+  name: string;
+  id: string;
+};
+
+export const getServerSideProps: GetServerSideProps<{
+  sports: Sport[] | null;
+}> = async (context) => {
+  const supabase = createServerClient(context);
+
+  const { data: sports, error } = await supabase
+    .from("sports")
+    .select("name, id");
+
+  console.log({ sports });
+
+  return {
+    props: {
+      sports,
+    },
+  };
+};
+
+function CreatePlayer({
+  sports,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { classes } = useClasses();
   const nameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
@@ -24,6 +51,18 @@ function CreatePlayer() {
   const cellphoneRef = useRef<HTMLInputElement>(null);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoSrc, setPhotoSrc] = useState("");
+  /* const [activeSports, setActiveSports] = useState(
+    sports?.map((sport) => ({ sport: sport.name, federated: false }))
+  ); */
+  const activeSportsRef = useRef(
+    sports?.map((sport) => ({
+      name: sport.name,
+      active: false,
+      federated: false,
+    }))
+  );
+
+  console.log({ sports });
 
   function handleChangePhoto(file: File | null) {
     if (file) {
@@ -35,6 +74,20 @@ function CreatePlayer() {
   function handleClickDeletePhoto() {
     setPhoto(null);
     setPhotoSrc("");
+  }
+
+  function handleClickActiveSport({
+    currentTarget,
+  }: MouseEvent<HTMLInputElement>) {
+    const { checked, value } = currentTarget;
+    const { current: activeSports } = activeSportsRef;
+
+    activeSports?.forEach((sport) => {
+      if (sport.name === value) {
+        sport.active = checked;
+      }
+    });
+    console.log(activeSports);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -114,7 +167,28 @@ function CreatePlayer() {
             <Avatar radius="xs" size="xl" src={photoSrc} />
           </section>
         </Input.Wrapper>
-        <Button type="submit" color="orange" className={classes.submit}>
+        <Switch.Group label="Deportes" className={classes.sports}>
+          {sports?.map((sport) => (
+            <Switch
+              key={sport.id}
+              value={sport.name}
+              label={sport.name}
+              onClick={handleClickActiveSport}
+            />
+          ))}
+        </Switch.Group>
+        <Switch.Group label="Federado" className={classes.federated}>
+          {sports?.map((sport) => (
+            <Switch
+              key={sport.id}
+              value={sport.name}
+              label={sport.name}
+              disabled
+              onClick={(e) => console.log(e)}
+            />
+          ))}
+        </Switch.Group>
+        <Button type="submit" className={classes.submit}>
           Crear jugador
         </Button>
       </form>
@@ -128,12 +202,13 @@ const useClasses = createStyles((theme) => ({
     paddingInline: theme.spacing.md,
     display: "grid",
     gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-    gridTemplateRows: "repeat(4, min-content)",
+    gridTemplateRows: "repeat(5, min-content)",
     gridTemplateAreas: `
       "name name name lastname lastname lastname"
       "dni dni birthdate birthdate cellphone cellphone"
       "email email email email email email"
-      "photoWrapper photoWrapper photoWrapper photoWrapper submit submit"`,
+      "photoWrapper photoWrapper photoWrapper photoWrapper . ."
+      "sports sports federated federated submit submit"`,
     columnGap: theme.spacing.lg,
     rowGap: theme.spacing.xl,
   },
@@ -169,6 +244,12 @@ const useClasses = createStyles((theme) => ({
     justifyContent: "flex-start",
     alignItems: "flex-end",
     gap: theme.spacing.xs,
+  },
+  sports: {
+    gridArea: "sports",
+  },
+  federated: {
+    gridArea: "federated",
   },
   submit: {
     gridArea: "submit",
