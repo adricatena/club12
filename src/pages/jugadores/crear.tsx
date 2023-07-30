@@ -1,5 +1,6 @@
 import Layout from "@/components/layout";
 import { createServerClient } from "@/lib/supabase/clients";
+import { Database } from "@/lib/supabase/types";
 import {
   Avatar,
   Button,
@@ -29,13 +30,22 @@ type Player = {
 };
 
 export const getServerSideProps: GetServerSideProps<{
-  sports: Sport[] | null;
+  sports: Sport[];
 }> = async (context) => {
   const supabase = createServerClient(context);
 
   const { data: sports, error } = await supabase
     .from("sports")
     .select("name, id");
+
+  if (!sports) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
@@ -48,7 +58,7 @@ function CreatePlayer({
   sports,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { classes } = useClasses();
-  const supabase = useSupabaseClient();
+  const supabase = useSupabaseClient<Database>();
 
   const nameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
@@ -111,12 +121,16 @@ function CreatePlayer({
       const { current: name } = nameRef;
       const { current: lastname } = lastnameRef;
       const { current: dni } = dniRef;
-      if (!(name && lastname && dni && photo))
-        throw new Error("Error subiendo archivo");
-      const fileName = `${dni.value}_${name.value}_${lastname.value}`;
-      const { data, error } = await supabase.storage
-        .from("players")
-        .upload(`public/${fileName}`, photo);
+      if (!(name && lastname && dni))
+        throw new Error("Es necesario el nombre, apellido y dni");
+
+      if (photo) {
+        const fileName = `${dni.value}_${name.value}_${lastname.value}`;
+        const { data, error } = await supabase.storage
+          .from("players")
+          .upload(`public/${fileName}`, photo);
+      }
+
       const newPlayerData: Player = {
         name: nameRef.current?.value as string,
         lastname: lastnameRef.current?.value as string,
@@ -125,11 +139,41 @@ function CreatePlayer({
         email: emailRef.current?.value,
         cellphone: cellphoneRef.current?.value,
       };
-      console.log({ data, error, newPlayerData });
+      const { data: player, error } = await supabase
+        .from("players")
+        .insert({ ...newPlayerData })
+        .select("id")
+        .limit(1)
+        .single();
+      if (error) throw new Error(error.message);
+
+      if (activeSports.length) {
+        const playersSportsInsert = activeSports.map((activeSport) => {
+          const sport_id = sports.find(
+            (dbSport) => dbSport.name === activeSport
+          )?.id as string;
+          const federated = Boolean(
+            federatedSports.find(
+              (federatedSport) => federatedSport === activeSport
+            )
+          );
+          return {
+            player_id: player.id,
+            sport_id,
+            federated,
+          };
+        });
+        const { data, error } = await supabase
+          .from("players_sports")
+          .insert(playersSportsInsert)
+          .select("*")
+          .limit(1)
+          .single();
+        console.log({ data, error });
+      }
     } catch (error) {
       console.error(error);
     }
-    // await supabase.from("players").insert({});
   }
 
   return (
