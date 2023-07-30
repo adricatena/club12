@@ -30,8 +30,6 @@ export const getServerSideProps: GetServerSideProps<{
     .from("sports")
     .select("name, id");
 
-  console.log({ sports });
-
   return {
     props: {
       sports,
@@ -51,18 +49,9 @@ function CreatePlayer({
   const cellphoneRef = useRef<HTMLInputElement>(null);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoSrc, setPhotoSrc] = useState("");
-  /* const [activeSports, setActiveSports] = useState(
-    sports?.map((sport) => ({ sport: sport.name, federated: false }))
-  ); */
-  const activeSportsRef = useRef(
-    sports?.map((sport) => ({
-      name: sport.name,
-      active: false,
-      federated: false,
-    }))
-  );
-
-  console.log({ sports });
+  const [activeSports, setActiveSports] = useState<string[]>([]);
+  // const [federatedSports, setFederatedSports] = useState<string[]>([]);
+  const federatedSportsRef = useRef<string[]>([]);
 
   function handleChangePhoto(file: File | null) {
     if (file) {
@@ -76,18 +65,46 @@ function CreatePlayer({
     setPhotoSrc("");
   }
 
-  function handleClickActiveSport({
+  function handleClickSportSwitch({
     currentTarget,
   }: MouseEvent<HTMLInputElement>) {
     const { checked, value } = currentTarget;
-    const { current: activeSports } = activeSportsRef;
+    if (checked) {
+      setActiveSports((prev) => [...prev, value]);
+    } else {
+      const filteredActiveSports = activeSports.filter(
+        (sport) => sport !== value
+      );
+      const filteredFederatedSports = federatedSportsRef.current.filter(
+        (sport) => sport !== value
+      );
+      setActiveSports(filteredActiveSports);
+      console.log(federatedSportsRef.current, filteredFederatedSports);
+      federatedSportsRef.current = filteredFederatedSports;
+      // setFederatedSports(filteredFederatedSports);
+    }
+    console.log(
+      federatedSportsRef.current,
+      federatedSportsRef.current.includes(value)
+    );
+  }
 
-    activeSports?.forEach((sport) => {
-      if (sport.name === value) {
-        sport.active = checked;
-      }
-    });
-    console.log(activeSports);
+  function handleClickFederatedSwitch({
+    currentTarget,
+  }: MouseEvent<HTMLInputElement>) {
+    const { checked, value } = currentTarget;
+    if (checked) {
+      // setFederatedSports((prev) => [...prev, value]);
+      federatedSportsRef.current.push(value);
+    } else {
+      const filteredFederatedSports = federatedSportsRef.current.filter(
+        (sport) => sport !== value
+      );
+      federatedSportsRef.current = filteredFederatedSports;
+      // setFederatedSports(filteredFederatedSports);
+    }
+
+    // console.log(federatedSports.includes(value));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -173,7 +190,7 @@ function CreatePlayer({
               key={sport.id}
               value={sport.name}
               label={sport.name}
-              onClick={handleClickActiveSport}
+              onClick={handleClickSportSwitch}
             />
           ))}
         </Switch.Group>
@@ -183,8 +200,9 @@ function CreatePlayer({
               key={sport.id}
               value={sport.name}
               label={sport.name}
-              disabled
-              onClick={(e) => console.log(e)}
+              checked={federatedSportsRef.current.includes(sport.name)}
+              disabled={!activeSports.includes(sport.name)}
+              onClick={handleClickFederatedSwitch}
             />
           ))}
         </Switch.Group>
