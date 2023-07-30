@@ -1,24 +1,31 @@
 import Layout from "@/components/layout";
 import { createServerClient } from "@/lib/supabase/clients";
 import {
-  ActionIcon,
   Avatar,
   Button,
   FileButton,
-  Flex,
   Input,
   NumberInput,
   Switch,
   TextInput,
   createStyles,
 } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
 type Sport = {
   name: string;
   id: string;
+};
+
+type Player = {
+  name: string;
+  lastname: string;
+  dni: number;
+  birthdate: string;
+  email?: string;
+  cellphone?: string;
 };
 
 export const getServerSideProps: GetServerSideProps<{
@@ -41,6 +48,8 @@ function CreatePlayer({
   sports,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { classes } = useClasses();
+  const supabase = useSupabaseClient();
+
   const nameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
   const dniRef = useRef<HTMLInputElement>(null);
@@ -96,8 +105,31 @@ function CreatePlayer({
     }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    try {
+      const { current: name } = nameRef;
+      const { current: lastname } = lastnameRef;
+      const { current: dni } = dniRef;
+      if (!(name && lastname && dni && photo))
+        throw new Error("Error subiendo archivo");
+      const fileName = `${dni.value}_${name.value}_${lastname.value}`;
+      const { data, error } = await supabase.storage
+        .from("players")
+        .upload(`public/${fileName}`, photo);
+      const newPlayerData: Player = {
+        name: nameRef.current?.value as string,
+        lastname: lastnameRef.current?.value as string,
+        dni: Number(dniRef.current?.value),
+        birthdate: birthdateRef.current?.value as string,
+        email: emailRef.current?.value,
+        cellphone: cellphoneRef.current?.value,
+      };
+      console.log({ data, error, newPlayerData });
+    } catch (error) {
+      console.error(error);
+    }
+    // await supabase.from("players").insert({});
   }
 
   return (
@@ -120,6 +152,8 @@ function CreatePlayer({
         <NumberInput
           label="DNI"
           placeholder="30123654"
+          minLength={8}
+          maxLength={9}
           hideControls
           required
           className={classes.dni}
@@ -140,6 +174,8 @@ function CreatePlayer({
         <NumberInput
           label="Celular"
           placeholder="3435873290"
+          minLength={8}
+          maxLength={11}
           hideControls
           className={classes.cellphone}
           ref={cellphoneRef}
@@ -151,6 +187,31 @@ function CreatePlayer({
           className={classes.email}
           ref={emailRef}
         />
+        <section className={classes.sportsContainer}>
+          <Switch.Group label="Deportes">
+            {sports?.map((sport) => (
+              <Switch
+                key={sport.id}
+                value={sport.name}
+                label={sport.name}
+                className={classes.sportSwitch}
+                onClick={handleClickSportSwitch}
+              />
+            ))}
+          </Switch.Group>
+          <Switch.Group label="Federado" value={federatedSports}>
+            {sports?.map((sport) => (
+              <Switch
+                key={sport.id}
+                value={sport.name}
+                label={sport.name}
+                disabled={!activeSports.includes(sport.name)}
+                className={classes.sportSwitch}
+                onClick={handleClickFederatedSwitch}
+              />
+            ))}
+          </Switch.Group>
+        </section>
         <Input.Wrapper label="Foto" className={classes.photoWrapper}>
           <section className={classes.photoContainer}>
             <span className={classes.photoButtons}>
@@ -161,40 +222,18 @@ function CreatePlayer({
                   </Button>
                 )}
               </FileButton>
-              <ActionIcon
-                color="dark"
-                size="lg"
-                radius="xl"
+              <Button
+                color="gray"
+                size="xs"
+                fullWidth
                 onClick={handleClickDeletePhoto}
               >
-                <IconTrash />
-              </ActionIcon>
+                Eliminar archivo
+              </Button>
             </span>
             <Avatar radius="xs" size="xl" src={photoSrc} />
           </section>
         </Input.Wrapper>
-        <Switch.Group label="Deportes" className={classes.sports}>
-          {sports?.map((sport) => (
-            <Switch
-              key={sport.id}
-              value={sport.name}
-              label={sport.name}
-              onClick={handleClickSportSwitch}
-            />
-          ))}
-        </Switch.Group>
-        <Switch.Group label="Federado" className={classes.federated}>
-          {sports?.map((sport) => (
-            <Switch
-              key={sport.id}
-              value={sport.name}
-              label={sport.name}
-              checked={federatedSports.includes(sport.name)}
-              disabled={!activeSports.includes(sport.name)}
-              onClick={handleClickFederatedSwitch}
-            />
-          ))}
-        </Switch.Group>
         <Button type="submit" className={classes.submit}>
           Crear jugador
         </Button>
@@ -214,8 +253,8 @@ const useClasses = createStyles((theme) => ({
       "name name name lastname lastname lastname"
       "dni dni birthdate birthdate cellphone cellphone"
       "email email email email email email"
-      "photoWrapper photoWrapper photoWrapper photoWrapper . ."
-      "sports sports federated federated submit submit"`,
+      "sports sports photoWrapper photoWrapper photoWrapper photoWrapper"
+      ". . . . submit submit"`,
     columnGap: theme.spacing.lg,
     rowGap: theme.spacing.xl,
   },
@@ -248,15 +287,16 @@ const useClasses = createStyles((theme) => ({
   },
   photoButtons: {
     display: "flex",
+    flexDirection: "column",
     justifyContent: "flex-start",
-    alignItems: "flex-end",
+    alignItems: "flex-start",
     gap: theme.spacing.xs,
   },
-  sports: {
+  sportsContainer: {
     gridArea: "sports",
   },
-  federated: {
-    gridArea: "federated",
+  sportSwitch: {
+    marginBottom: theme.radius.sm,
   },
   submit: {
     gridArea: "submit",
