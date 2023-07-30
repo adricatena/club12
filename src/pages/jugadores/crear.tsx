@@ -50,8 +50,7 @@ function CreatePlayer({
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoSrc, setPhotoSrc] = useState("");
   const [activeSports, setActiveSports] = useState<string[]>([]);
-  // const [federatedSports, setFederatedSports] = useState<string[]>([]);
-  const federatedSportsRef = useRef<string[]>([]);
+  const [federatedSports, setFederatedSports] = useState<string[]>([]);
 
   function handleChangePhoto(file: File | null) {
     if (file) {
@@ -70,23 +69,17 @@ function CreatePlayer({
   }: MouseEvent<HTMLInputElement>) {
     const { checked, value } = currentTarget;
     if (checked) {
-      setActiveSports((prev) => [...prev, value]);
+      setActiveSports([...activeSports, value]);
     } else {
       const filteredActiveSports = activeSports.filter(
         (sport) => sport !== value
       );
-      const filteredFederatedSports = federatedSportsRef.current.filter(
+      const filteredFederatedSports = federatedSports.filter(
         (sport) => sport !== value
       );
-      setActiveSports(filteredActiveSports);
-      console.log(federatedSportsRef.current, filteredFederatedSports);
-      federatedSportsRef.current = filteredFederatedSports;
-      // setFederatedSports(filteredFederatedSports);
+      setActiveSports([...filteredActiveSports]);
+      setFederatedSports([...filteredFederatedSports]);
     }
-    console.log(
-      federatedSportsRef.current,
-      federatedSportsRef.current.includes(value)
-    );
   }
 
   function handleClickFederatedSwitch({
@@ -94,17 +87,13 @@ function CreatePlayer({
   }: MouseEvent<HTMLInputElement>) {
     const { checked, value } = currentTarget;
     if (checked) {
-      // setFederatedSports((prev) => [...prev, value]);
-      federatedSportsRef.current.push(value);
+      setFederatedSports([...federatedSports, value]);
     } else {
-      const filteredFederatedSports = federatedSportsRef.current.filter(
+      const filteredFederatedSports = federatedSports.filter(
         (sport) => sport !== value
       );
-      federatedSportsRef.current = filteredFederatedSports;
-      // setFederatedSports(filteredFederatedSports);
+      setFederatedSports(filteredFederatedSports);
     }
-
-    // console.log(federatedSports.includes(value));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -200,7 +189,7 @@ function CreatePlayer({
               key={sport.id}
               value={sport.name}
               label={sport.name}
-              checked={federatedSportsRef.current.includes(sport.name)}
+              checked={federatedSports.includes(sport.name)}
               disabled={!activeSports.includes(sport.name)}
               onClick={handleClickFederatedSwitch}
             />
