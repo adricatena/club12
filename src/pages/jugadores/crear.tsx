@@ -1,33 +1,27 @@
+import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
+import SportsSwitches from "@/components/sports-switches";
 import { createServerClient } from "@/lib/supabase/clients";
 import { Database } from "@/lib/supabase/types";
+import { Player } from "@/types/players";
+import { Sport } from "@/types/sports";
 import {
   Avatar,
   Button,
   FileButton,
+  Group,
   Input,
   NumberInput,
+  Stack,
   Switch,
   TextInput,
+  Title,
   createStyles,
 } from "@mantine/core";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { wrap } from "module";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
-
-type Sport = {
-  name: string;
-  id: string;
-};
-
-type Player = {
-  name: string;
-  lastname: string;
-  dni: number;
-  birthdate: string;
-  email?: string;
-  cellphone?: string;
-};
 
 export const getServerSideProps: GetServerSideProps<{
   sports: Sport[];
@@ -169,7 +163,7 @@ function CreatePlayer({
           .select("*")
           .limit(1)
           .single();
-        console.log({ data, error });
+        if (error) throw new Error(error.message);
       }
     } catch (error) {
       console.error(error);
@@ -179,108 +173,64 @@ function CreatePlayer({
   return (
     <Layout breadcrumbs={["Jugadores", "Crear"]}>
       <form className={classes.form} onSubmit={handleSubmit}>
-        <TextInput
-          label="Nombre"
-          placeholder="Juan"
-          required
-          className={classes.name}
-          ref={nameRef}
-        />
-        <TextInput
-          label="Apellido"
-          placeholder="Perez"
-          required
-          className={classes.lastname}
-          ref={lastnameRef}
-        />
-        <NumberInput
-          label="DNI"
-          placeholder="30123654"
-          minLength={8}
-          maxLength={9}
-          hideControls
-          required
-          className={classes.dni}
-          ref={dniRef}
-        />
-        <Input.Wrapper
-          label="Fecha de nacimiento"
-          required
-          className={classes.birthdate}
-        >
-          <Input
+        <section className={classes.inputs}>
+          <TextInput label="Nombre" placeholder="Juan" required ref={nameRef} />
+          <TextInput
+            label="Apellido"
+            placeholder="Perez"
+            required
+            ref={lastnameRef}
+          />
+          <NumberInput
+            label="DNI"
+            placeholder="30123654"
+            minLength={8}
+            maxLength={9}
+            hideControls
+            required
+            ref={dniRef}
+          />
+          <TextInput
             type="date"
+            label="Nacimiento"
             placeholder="15/07/1995"
             required
             ref={birthdateRef}
           />
-        </Input.Wrapper>
-        <NumberInput
-          label="Celular"
-          placeholder="3435873290"
-          minLength={8}
-          maxLength={11}
-          hideControls
-          className={classes.cellphone}
-          ref={cellphoneRef}
-        />
-        <TextInput
-          type="email"
-          label="Email"
-          placeholder="juanperez@gmail.com"
-          className={classes.email}
-          ref={emailRef}
-        />
-        <section className={classes.sportsContainer}>
-          <Switch.Group label="Deportes">
-            {sports?.map((sport) => (
-              <Switch
-                key={sport.id}
-                value={sport.name}
-                label={sport.name}
-                className={classes.sportSwitch}
-                onClick={handleClickSportSwitch}
-              />
-            ))}
-          </Switch.Group>
-          <Switch.Group label="Federado" value={federatedSports}>
-            {sports?.map((sport) => (
-              <Switch
-                key={sport.id}
-                value={sport.name}
-                label={sport.name}
-                disabled={!activeSports.includes(sport.name)}
-                className={classes.sportSwitch}
-                onClick={handleClickFederatedSwitch}
-              />
-            ))}
-          </Switch.Group>
+          <NumberInput
+            label="Celular"
+            placeholder="3435873290"
+            minLength={8}
+            maxLength={11}
+            hideControls
+            ref={cellphoneRef}
+          />
+          <TextInput
+            type="email"
+            label="Email"
+            placeholder="juanperez@gmail.com"
+            ref={emailRef}
+          />
         </section>
-        <Input.Wrapper label="Foto" className={classes.photoWrapper}>
-          <section className={classes.photoContainer}>
-            <span className={classes.photoButtons}>
-              <FileButton accept="image/*" onChange={handleChangePhoto}>
-                {(props) => (
-                  <Button {...props} size="xs">
-                    Seleccionar archivo
-                  </Button>
-                )}
-              </FileButton>
-              <Button
-                color="gray"
-                size="xs"
-                fullWidth
-                onClick={handleClickDeletePhoto}
-              >
-                Eliminar archivo
-              </Button>
-            </span>
-            <Avatar radius="xs" size="xl" src={photoSrc} />
-          </section>
-        </Input.Wrapper>
-        <Button type="submit" className={classes.submit}>
-          Crear jugador
-        </Button>
+        <section className={classes.otherInputs}>
+          <div className={classes.photoSwitch}>
+            <InputPhoto
+              photoSrc={photoSrc}
+              onClickFileButton={handleChangePhoto}
+              onClickDeleteButton={handleClickDeletePhoto}
+            />
+            <SportsSwitches
+              sports={sports}
+              activeSports={activeSports}
+              federatedSports={federatedSports}
+              onClickSport={handleClickSportSwitch}
+              onClickFederatedSport={handleClickFederatedSwitch}
+            />
+          </div>
+          <Button type="submit" className={classes.submitButton}>
+            Crear jugador
+          </Button>
+        </section>
       </form>
     </Layout>
   );
@@ -288,62 +238,29 @@ function CreatePlayer({
 
 const useClasses = createStyles((theme) => ({
   form: {
+    padding: theme.spacing.md,
+    maxWidth: theme.breakpoints.sm,
     width: "100%",
-    paddingInline: theme.spacing.md,
-    display: "grid",
-    gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
-    gridTemplateRows: "repeat(5, min-content)",
-    gridTemplateAreas: `
-      "name name name lastname lastname lastname"
-      "dni dni birthdate birthdate cellphone cellphone"
-      "email email email email email email"
-      "sports sports photoWrapper photoWrapper photoWrapper photoWrapper"
-      ". . . . submit submit"`,
-    columnGap: theme.spacing.lg,
-    rowGap: theme.spacing.xl,
-  },
-  name: {
-    gridArea: "name",
-  },
-  lastname: {
-    gridArea: "lastname",
-  },
-  dni: {
-    gridArea: "dni",
-  },
-  birthdate: {
-    gridArea: "birthdate",
-  },
-  cellphone: {
-    gridArea: "cellphone",
-  },
-  email: {
-    gridArea: "email",
-  },
-  photoWrapper: {
-    gridArea: "photoWrapper",
-  },
-  photoContainer: {
     display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-end",
-    gap: theme.spacing.lg,
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: theme.spacing.xl,
   },
-  photoButtons: {
+  inputs: {
+    width: "100%",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    gap: theme.spacing.xs,
+    gap: theme.spacing.lg,
   },
-  sportsContainer: {
-    gridArea: "sports",
+  otherInputs: {
+    display: "grid",
   },
-  sportSwitch: {
-    marginBottom: theme.radius.sm,
+  photoSwitch: {
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing.lg,
   },
-  submit: {
-    gridArea: "submit",
+  submitButton: {
     placeSelf: "end",
   },
 }));

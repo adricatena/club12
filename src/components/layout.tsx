@@ -17,20 +17,23 @@ export default function Layout({ breadcrumbs, children }: Props) {
   return (
     <div className={classes.container}>
       <header className={classes.header}>
-        <ULink href="/">
-          <Title order={2}>Club 12</Title>
-        </ULink>
+        <span className={classes.brand}>
+          <ULink href="/">
+            <Title order={2}>Club 12</Title>
+          </ULink>
 
-        {breadcrumbs
-          ? breadcrumbs.map((breadcrumb) => (
-              <span key={breadcrumb} className={classes.breadcrums}>
-                <IconChevronRight />
-                <ULink href={`/${breadcrumb.toLowerCase()}`}>
-                  <Title order={4}>{breadcrumb}</Title>
-                </ULink>
-              </span>
-            ))
-          : null}
+          {breadcrumbs
+            ? breadcrumbs.map((breadcrumb) => (
+                <span key={breadcrumb} className={classes.breadcrums}>
+                  <IconChevronRight />
+                  <ULink href={`/${breadcrumb.toLowerCase()}`}>
+                    <Title order={4}>{breadcrumb}</Title>
+                  </ULink>
+                </span>
+              ))
+            : null}
+        </span>
+        <LogoutButton />
       </header>
       <aside className={classes.aside}>
         <nav className={classes.nav}>
@@ -40,6 +43,7 @@ export default function Layout({ breadcrumbs, children }: Props) {
               label={navLink.label}
               icon={navLink.icon}
               classNames={{
+                root: classes.navLink,
                 icon: classes.navLinkIcon,
               }}
             >
@@ -54,7 +58,6 @@ export default function Layout({ breadcrumbs, children }: Props) {
             </NavLink>
           ))}
         </nav>
-        <LogoutButton />
       </aside>
       <main className={classes.main}>{children}</main>
     </div>
@@ -71,15 +74,19 @@ const useClasses = createStyles((theme) => ({
   },
   header: {
     gridArea: "header",
-    paddingLeft: theme.spacing.sm,
-    paddingTop: theme.spacing.xs,
-    paddingBottom: theme.spacing.xs,
+    padding: theme.spacing.lg,
     borderBottomStyle: "solid",
     borderBottomWidth: theme.radius.xs,
     borderBottomColor: theme.colors.gray[0],
     display: "flex",
     alignItems: "center",
-    gap: theme.spacing.xs,
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
+  },
+  brand: {
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing.sm,
   },
   breadcrums: {
     display: "flex",
@@ -99,11 +106,17 @@ const useClasses = createStyles((theme) => ({
   nav: {
     width: "100%",
   },
+  navLink: {
+    padding: theme.spacing.md,
+  },
   navLinkIcon: {
     marginRight: "0.4rem",
   },
   main: {
     gridArea: "main",
     margin: `${theme.spacing.xs} ${theme.spacing.sm}`,
+    display: "grid",
+    alignItems: "start",
+    justifyItems: "center",
   },
 }));
