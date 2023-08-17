@@ -1,25 +1,10 @@
 import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
-import { createServerClient } from "@/lib/supabase/clients";
-import { Database } from "@/lib/supabase/types";
+import { createServerClient, useSupabase } from "@/lib/supabase/clients";
 import { Player } from "@/types/players";
 import { Sport } from "@/types/sports";
-import {
-  Avatar,
-  Button,
-  FileButton,
-  Group,
-  Input,
-  NumberInput,
-  Stack,
-  Switch,
-  TextInput,
-  Title,
-  createStyles,
-} from "@mantine/core";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import { wrap } from "module";
+import { Button, NumberInput, TextInput, createStyles } from "@mantine/core";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
@@ -52,8 +37,7 @@ function CreatePlayer({
   sports,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { classes } = useClasses();
-  const supabase = useSupabaseClient<Database>();
-
+  const supabase = useSupabase();
   const nameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
   const dniRef = useRef<HTMLInputElement>(null);
@@ -85,10 +69,10 @@ function CreatePlayer({
       setActiveSports([...activeSports, value]);
     } else {
       const filteredActiveSports = activeSports.filter(
-        (sport) => sport !== value
+        (sport) => sport !== value,
       );
       const filteredFederatedSports = federatedSports.filter(
-        (sport) => sport !== value
+        (sport) => sport !== value,
       );
       setActiveSports([...filteredActiveSports]);
       setFederatedSports([...filteredFederatedSports]);
@@ -103,7 +87,7 @@ function CreatePlayer({
       setFederatedSports([...federatedSports, value]);
     } else {
       const filteredFederatedSports = federatedSports.filter(
-        (sport) => sport !== value
+        (sport) => sport !== value,
       );
       setFederatedSports(filteredFederatedSports);
     }
@@ -144,12 +128,12 @@ function CreatePlayer({
       if (activeSports.length) {
         const playersSportsInsert = activeSports.map((activeSport) => {
           const sport_id = sports.find(
-            (dbSport) => dbSport.name === activeSport
+            (dbSport) => dbSport.name === activeSport,
           )?.id as string;
           const federated = Boolean(
             federatedSports.find(
-              (federatedSport) => federatedSport === activeSport
-            )
+              (federatedSport) => federatedSport === activeSport,
+            ),
           );
           return {
             player_id: player.id,

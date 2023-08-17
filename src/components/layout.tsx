@@ -1,10 +1,10 @@
-import { ReactNode } from "react";
-import { NavLink, Title, createStyles, px, rem } from "@mantine/core";
-import Link from "next/link";
-import ULink from "./unstyled-link";
 import { navLinks } from "@/data/nav-links";
-import LogoutButton from "./logout-button";
+import { NavLink, Title } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
+import Link from "next/link";
+import { ReactNode } from "react";
+import LogoutButton from "./logout-button";
+import ULink from "./unstyled-link";
 
 type Props = {
   breadcrumbs?: string[];
@@ -12,19 +12,16 @@ type Props = {
 };
 
 export default function Layout({ breadcrumbs, children }: Props) {
-  const { classes } = useClasses();
-
   return (
-    <div className={classes.container}>
-      <header className={classes.header}>
-        <span className={classes.brand}>
+    <div className="grid h-screen grid-cols-[min-content_auto] grid-rows-[min-content_auto]">
+      <header className="col-span-2 flex items-center justify-between gap-2 border-0 border-b-2 border-solid border-gray-200 p-5">
+        <span className="flex items-center gap-2">
           <ULink href="/">
             <Title order={2}>Club 12</Title>
           </ULink>
-
           {breadcrumbs
             ? breadcrumbs.map((breadcrumb) => (
-                <span key={breadcrumb} className={classes.breadcrums}>
+                <span key={breadcrumb} className="flex items-center gap-1">
                   <IconChevronRight />
                   <ULink href={`/${breadcrumb.toLowerCase()}`}>
                     <Title order={4}>{breadcrumb}</Title>
@@ -35,16 +32,16 @@ export default function Layout({ breadcrumbs, children }: Props) {
         </span>
         <LogoutButton />
       </header>
-      <aside className={classes.aside}>
-        <nav className={classes.nav}>
+      <aside className="col-span-1 flex flex-col items-center justify-between border-0 border-r-2 border-solid border-gray-200">
+        <nav className="w-full">
           {navLinks.map((navLink) => (
             <NavLink
               key={navLink.label}
               label={navLink.label}
               icon={navLink.icon}
               classNames={{
-                root: classes.navLink,
-                icon: classes.navLinkIcon,
+                root: "p-2",
+                icon: "mr-2",
               }}
             >
               {navLink.actions.map((action) => (
@@ -59,64 +56,9 @@ export default function Layout({ breadcrumbs, children }: Props) {
           ))}
         </nav>
       </aside>
-      <main className={classes.main}>{children}</main>
+      <main className="col-span-1 mx-3 my-2 grid items-start justify-items-center">
+        {children}
+      </main>
     </div>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  container: {
-    height: "100vh",
-    display: "grid",
-    gridTemplateRows: "min-content auto",
-    gridTemplateColumns: "min-content auto",
-    gridTemplateAreas: `"header header" "aside main"`,
-  },
-  header: {
-    gridArea: "header",
-    padding: theme.spacing.lg,
-    borderBottomStyle: "solid",
-    borderBottomWidth: theme.radius.xs,
-    borderBottomColor: theme.colors.gray[0],
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: theme.spacing.sm,
-  },
-  brand: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing.sm,
-  },
-  breadcrums: {
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-  },
-  aside: {
-    gridArea: "aside",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRightStyle: "solid",
-    borderRightWidth: theme.radius.xs,
-    borderRightColor: theme.colors.gray[0],
-  },
-  nav: {
-    width: "100%",
-  },
-  navLink: {
-    padding: theme.spacing.md,
-  },
-  navLinkIcon: {
-    marginRight: "0.4rem",
-  },
-  main: {
-    gridArea: "main",
-    margin: `${theme.spacing.xs} ${theme.spacing.sm}`,
-    display: "grid",
-    alignItems: "start",
-    justifyItems: "center",
-  },
-}));

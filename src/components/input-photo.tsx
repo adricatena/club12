@@ -1,4 +1,4 @@
-import { Avatar, Button, FileButton, createStyles } from "@mantine/core";
+import { Avatar, Button, FileButton } from "@mantine/core";
 
 interface InputPhotoProps {
   photoSrc: string | "";
@@ -11,12 +11,10 @@ function InputPhoto({
   onClickFileButton,
   onClickDeleteButton,
 }: InputPhotoProps) {
-  const { classes } = useClasses();
-
   return (
-    <div className={classes.container}>
+    <div className="flex items-end justify-start gap-4">
       <Avatar radius="xs" size="xl" src={photoSrc} />
-      <span className={classes.buttons}>
+      <span className="flex flex-col items-start justify-start gap-3">
         <FileButton accept="image/*" onChange={onClickFileButton}>
           {(props) => (
             <Button {...props} size="xs">
@@ -31,21 +29,5 @@ function InputPhoto({
     </div>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  container: {
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "flex-end",
-    gap: theme.spacing.md,
-  },
-  buttons: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
-    gap: theme.spacing.sm,
-  },
-}));
 
 export default InputPhoto;

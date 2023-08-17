@@ -1,10 +1,10 @@
+import { useSupabase } from "@/lib/supabase/clients";
 import { Button, createStyles } from "@mantine/core";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { IconDoorExit } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 
 function LogoutButton() {
-  const supabase = useSupabaseClient();
+  const supabase = useSupabase();
   const router = useRouter();
   const { classes } = useClasses();
 

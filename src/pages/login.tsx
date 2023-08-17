@@ -1,19 +1,12 @@
-import { FormEvent, useRef, useState } from "react";
-import { useRouter } from "next/router";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import toast from "@/components/toast";
-import {
-  Button,
-  PasswordInput,
-  TextInput,
-  Title,
-  createStyles,
-} from "@mantine/core";
+import { useSupabase } from "@/lib/supabase/clients";
+import { Button, PasswordInput, TextInput, Title } from "@mantine/core";
+import { useRouter } from "next/router";
+import { FormEvent, useRef, useState } from "react";
 
 export default function Login() {
-  const supabase = useSupabaseClient();
+  const supabase = useSupabase();
   const router = useRouter();
-  const { classes } = useClasses();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,20 +36,23 @@ export default function Login() {
   }
 
   return (
-    <main className={classes.main}>
+    <main className="flex h-screen flex-col items-center justify-center gap-4">
       <Title order={1}>Club 12</Title>
-      <form className={classes.form} onSubmit={handleSubmit}>
+      <form
+        className="flex w-full max-w-xs flex-col items-center justify-center gap-5 p-3"
+        onSubmit={handleSubmit}
+      >
         <TextInput
           type="email"
           label="Ingrese su email"
           placeholder="club@12.com.ar"
-          className={classes.input}
+          className="w-full"
           ref={emailRef}
         />
         <PasswordInput
           label="Ingrese su contraseña"
           placeholder="password123"
-          className={classes.input}
+          className="w-full"
           ref={passwordRef}
         />
         <Button type="submit" disabled={isLoading}>
@@ -66,27 +62,3 @@ export default function Login() {
     </main>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  main: {
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: theme.spacing.md,
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: theme.spacing.lg,
-    width: "100%",
-    maxWidth: theme.breakpoints.xs,
-    padding: theme.spacing.sm,
-  },
-  input: {
-    width: "100%",
-  },
-}));
