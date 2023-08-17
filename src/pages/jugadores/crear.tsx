@@ -4,7 +4,7 @@ import SportsSwitches from "@/components/sports-switches";
 import { createServerClient, useSupabase } from "@/lib/supabase/clients";
 import { Player } from "@/types/players";
 import { Sport } from "@/types/sports";
-import { Button, NumberInput, TextInput, createStyles } from "@mantine/core";
+import { Button, NumberInput, TextInput } from "@mantine/core";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
@@ -36,7 +36,6 @@ export const getServerSideProps: GetServerSideProps<{
 function CreatePlayer({
   sports,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { classes } = useClasses();
   const supabase = useSupabase();
   const nameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
@@ -156,8 +155,11 @@ function CreatePlayer({
 
   return (
     <Layout breadcrumbs={["Jugadores", "Crear"]}>
-      <form className={classes.form} onSubmit={handleSubmit}>
-        <section className={classes.inputs}>
+      <form
+        className="flex w-full max-w-3xl items-stretch gap-7 p-4"
+        onSubmit={handleSubmit}
+      >
+        <section className="flex w-full flex-col gap-5">
           <TextInput label="Nombre" placeholder="Juan" required ref={nameRef} />
           <TextInput
             label="Apellido"
@@ -196,8 +198,8 @@ function CreatePlayer({
             ref={emailRef}
           />
         </section>
-        <section className={classes.otherInputs}>
-          <div className={classes.photoSwitch}>
+        <section className="grid">
+          <div className="flex flex-col gap-5">
             <InputPhoto
               photoSrc={photoSrc}
               onClickFileButton={handleChangePhoto}
@@ -211,7 +213,7 @@ function CreatePlayer({
               onClickFederatedSport={handleClickFederatedSwitch}
             />
           </div>
-          <Button type="submit" className={classes.submitButton}>
+          <Button type="submit" className="place-self-end">
             Crear jugador
           </Button>
         </section>
@@ -219,34 +221,5 @@ function CreatePlayer({
     </Layout>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  form: {
-    padding: theme.spacing.md,
-    maxWidth: theme.breakpoints.sm,
-    width: "100%",
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "stretch",
-    gap: theme.spacing.xl,
-  },
-  inputs: {
-    width: "100%",
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing.lg,
-  },
-  otherInputs: {
-    display: "grid",
-  },
-  photoSwitch: {
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing.lg,
-  },
-  submitButton: {
-    placeSelf: "end",
-  },
-}));
 
 export default CreatePlayer;

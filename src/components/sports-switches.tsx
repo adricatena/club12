@@ -1,5 +1,5 @@
 import { Sport } from "@/types/sports";
-import { Switch, createStyles } from "@mantine/core";
+import { Switch } from "@mantine/core";
 import { MouseEvent } from "react";
 
 interface Props {
@@ -17,17 +17,15 @@ function SportsSwitches({
   onClickSport,
   onClickFederatedSport,
 }: Props) {
-  const { classes } = useClasses();
-
   return (
-    <div className={classes.container}>
+    <div className="flex flex-col gap-2">
       <Switch.Group label="Deportes">
         {sports?.map((sport) => (
           <Switch
             key={sport.id}
             value={sport.name}
             label={sport.name}
-            className={classes.switch}
+            className="pb-1"
             onClick={onClickSport}
           />
         ))}
@@ -39,7 +37,7 @@ function SportsSwitches({
             value={sport.name}
             label={sport.name}
             disabled={!activeSports.includes(sport.name)}
-            className={classes.switch}
+            className="pb-1"
             onClick={onClickFederatedSport}
           />
         ))}
@@ -47,16 +45,5 @@ function SportsSwitches({
     </div>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing.xs,
-  },
-  switch: {
-    paddingBottom: theme.spacing.xs,
-  },
-}));
 
 export default SportsSwitches;

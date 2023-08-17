@@ -1,6 +1,5 @@
-import { ReactNode } from "react";
 import Link from "next/link";
-import { createStyles } from "@mantine/core";
+import { ReactNode } from "react";
 
 type Props = {
   href: string;
@@ -9,27 +8,14 @@ type Props = {
 };
 
 export default function ULink({ href, withUnderline = true, children }: Props) {
-  const { classes } = useClasses();
   return (
     <Link
       href={href}
-      className={`${classes.link} ${
-        withUnderline ? classes.withUnderline : ""
+      className={`text-inherit no-underline ${
+        withUnderline ? "hover:underline" : ""
       }`}
     >
       {children}
     </Link>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  link: {
-    textDecoration: "none",
-    color: "inherit",
-  },
-  withUnderline: {
-    "&:hover": {
-      textDecoration: "underline",
-    },
-  },
-}));

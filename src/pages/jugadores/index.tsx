@@ -1,6 +1,6 @@
 import Layout from "@/components/layout";
 import { createServerClient } from "@/lib/supabase/clients";
-import { ActionIcon, Button, NumberInput, createStyles } from "@mantine/core";
+import { ActionIcon, NumberInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRef } from "react";
@@ -40,13 +40,12 @@ export const getServerSideProps: GetServerSideProps<{
 export default function Players({
   players,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { classes } = useClasses();
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 
   return (
     <Layout breadcrumbs={["Jugadores"]}>
-      <section className={classes.searchSection}>
-        <form className={classes.searchPlayerForm}>
+      <section className="flex items-center justify-between">
+        <form className="flex items-center">
           <NumberInput
             label="Buscar por DNI"
             hideControls
@@ -70,15 +69,3 @@ export default function Players({
     </Layout>
   );
 }
-
-const useClasses = createStyles((theme) => ({
-  searchSection: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  searchPlayerForm: {
-    display: "flex",
-    alignItems: "center",
-  },
-}));
