@@ -1,21 +1,15 @@
 import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
-import { createServerClient, useSupabase } from "@/lib/supabase/clients";
-import { Player } from "@/types/players";
-import { Sport } from "@/types/sports";
+import { Player } from "@/entities/player/types";
+import { SportController } from "@/entities/sport/sport.controller";
+import { useSupabase } from "@/hooks/use-supabase";
 import { Button, NumberInput, TextInput } from "@mantine/core";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
-export const getServerSideProps: GetServerSideProps<{
-  sports: Sport[];
-}> = async (context) => {
-  const supabase = createServerClient(context);
-
-  const { data: sports, error } = await supabase
-    .from("sports")
-    .select("name, id");
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const sports = await SportController.getSports();
 
   if (!sports) {
     return {

@@ -1,4 +1,4 @@
-import { navLinks } from "@/data/nav-links";
+import { navLinks } from "@/components/nav-links";
 import { NavLink, Title } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
 import Link from "next/link";
@@ -14,7 +14,7 @@ type Props = {
 export default function Layout({ breadcrumbs, children }: Props) {
   return (
     <div className="grid h-screen grid-cols-[min-content_auto] grid-rows-[min-content_auto]">
-      <header className="col-span-2 flex items-center justify-between gap-2 border-0 border-b-2 border-solid border-gray-200 p-5">
+      <header className="col-span-2 flex items-center justify-between gap-2 border-0 border-b-2 border-solid border-gray-200 p-4">
         <span className="flex items-center gap-2">
           <ULink href="/">
             <Title order={2}>Club 12</Title>
@@ -40,7 +40,7 @@ export default function Layout({ breadcrumbs, children }: Props) {
               label={navLink.label}
               icon={navLink.icon}
               classNames={{
-                root: "p-2",
+                root: "p-4",
                 icon: "mr-2",
               }}
             >

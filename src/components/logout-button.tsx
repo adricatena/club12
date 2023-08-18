@@ -1,4 +1,4 @@
-import { useSupabase } from "@/lib/supabase/clients";
+import { useSupabase } from "@/hooks/use-supabase";
 import { Button } from "@mantine/core";
 import { IconDoorExit } from "@tabler/icons-react";
 import { useRouter } from "next/router";

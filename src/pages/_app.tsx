@@ -1,4 +1,4 @@
-import { Database } from "@/lib/supabase/types";
+import { Database } from "@/database/types";
 import "@/styles/globals.css";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
