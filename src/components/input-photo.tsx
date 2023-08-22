@@ -1,16 +1,16 @@
 import { Avatar, Button, FileButton } from "@mantine/core";
 
-interface InputPhotoProps {
+type Props = {
   photoSrc: string | "";
   onClickFileButton: (file: File | null) => void;
   onClickDeleteButton: () => void;
-}
+};
 
 function InputPhoto({
   photoSrc,
   onClickFileButton,
   onClickDeleteButton,
-}: InputPhotoProps) {
+}: Props) {
   return (
     <div className="flex items-end justify-start gap-4">
       <Avatar radius="xs" size="xl" src={photoSrc} />

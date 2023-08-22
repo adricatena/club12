@@ -1,43 +1,25 @@
 import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
+import { PlayerController } from "@/entities/player/player.controller";
 import { Player } from "@/entities/player/types";
 import { SportController } from "@/entities/sport/sport.controller";
-import { useSupabase } from "@/hooks/use-supabase";
-import { Button, NumberInput, TextInput } from "@mantine/core";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { Button, Loader, NumberInput, TextInput } from "@mantine/core";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
+import useSWR from "swr";
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const sports = await SportController.getSports();
+function CreatePlayer() {
+  const { data: sportsFromDb } = useSWR("getSports", (_) =>
+    SportController.getSports().then((data) => data),
+  );
 
-  if (!sports) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: {
-      sports,
-    },
-  };
-};
-
-function CreatePlayer({
-  sports,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const supabase = useSupabase();
   const nameRef = useRef<HTMLInputElement>(null);
   const lastnameRef = useRef<HTMLInputElement>(null);
   const dniRef = useRef<HTMLInputElement>(null);
   const birthdateRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const cellphoneRef = useRef<HTMLInputElement>(null);
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [photo, setPhoto] = useState<File>();
   const [photoSrc, setPhotoSrc] = useState("");
   const [activeSports, setActiveSports] = useState<string[]>([]);
   const [federatedSports, setFederatedSports] = useState<string[]>([]);
@@ -50,7 +32,7 @@ function CreatePlayer({
   }
 
   function handleClickDeletePhoto() {
-    setPhoto(null);
+    setPhoto(undefined);
     setPhotoSrc("");
   }
 
@@ -95,13 +77,6 @@ function CreatePlayer({
       if (!(name && lastname && dni))
         throw new Error("Es necesario el nombre, apellido y dni");
 
-      if (photo) {
-        const fileName = `${dni.value}_${name.value}_${lastname.value}`;
-        const { data, error } = await supabase.storage
-          .from("players")
-          .upload(`public/${fileName}`, photo);
-      }
-
       const newPlayerData: Player = {
         name: nameRef.current?.value as string,
         lastname: lastnameRef.current?.value as string,
@@ -110,38 +85,14 @@ function CreatePlayer({
         email: emailRef.current?.value,
         cellphone: cellphoneRef.current?.value,
       };
-      const { data: player, error } = await supabase
-        .from("players")
-        .insert({ ...newPlayerData })
-        .select("id")
-        .limit(1)
-        .single();
-      if (error) throw new Error(error.message);
 
-      if (activeSports.length) {
-        const playersSportsInsert = activeSports.map((activeSport) => {
-          const sport_id = sports.find(
-            (dbSport) => dbSport.name === activeSport,
-          )?.id as string;
-          const federated = Boolean(
-            federatedSports.find(
-              (federatedSport) => federatedSport === activeSport,
-            ),
-          );
-          return {
-            player_id: player.id,
-            sport_id,
-            federated,
-          };
-        });
-        const { data, error } = await supabase
-          .from("players_sports")
-          .insert(playersSportsInsert)
-          .select("*")
-          .limit(1)
-          .single();
-        if (error) throw new Error(error.message);
-      }
+      await PlayerController.createPlayer(
+        newPlayerData,
+        sportsFromDb,
+        photo,
+        activeSports,
+        federatedSports,
+      );
     } catch (error) {
       console.error(error);
     }
@@ -149,69 +100,78 @@ function CreatePlayer({
 
   return (
     <Layout breadcrumbs={["Jugadores", "Crear"]}>
-      <form
-        className="flex w-full max-w-3xl items-stretch gap-7 p-4"
-        onSubmit={handleSubmit}
-      >
-        <section className="flex w-full flex-col gap-5">
-          <TextInput label="Nombre" placeholder="Juan" required ref={nameRef} />
-          <TextInput
-            label="Apellido"
-            placeholder="Perez"
-            required
-            ref={lastnameRef}
-          />
-          <NumberInput
-            label="DNI"
-            placeholder="30123654"
-            minLength={8}
-            maxLength={9}
-            hideControls
-            required
-            ref={dniRef}
-          />
-          <TextInput
-            type="date"
-            label="Nacimiento"
-            placeholder="15/07/1995"
-            required
-            ref={birthdateRef}
-          />
-          <NumberInput
-            label="Celular"
-            placeholder="3435873290"
-            minLength={8}
-            maxLength={11}
-            hideControls
-            ref={cellphoneRef}
-          />
-          <TextInput
-            type="email"
-            label="Email"
-            placeholder="juanperez@gmail.com"
-            ref={emailRef}
-          />
-        </section>
-        <section className="grid">
-          <div className="flex flex-col gap-5">
-            <InputPhoto
-              photoSrc={photoSrc}
-              onClickFileButton={handleChangePhoto}
-              onClickDeleteButton={handleClickDeletePhoto}
+      {sportsFromDb ? (
+        <form
+          className="flex w-full max-w-3xl items-stretch gap-7 p-4"
+          onSubmit={handleSubmit}
+        >
+          <section className="flex w-full flex-col gap-5">
+            <TextInput
+              label="Nombre"
+              placeholder="Juan"
+              required
+              ref={nameRef}
             />
-            <SportsSwitches
-              sports={sports}
-              activeSports={activeSports}
-              federatedSports={federatedSports}
-              onClickSport={handleClickSportSwitch}
-              onClickFederatedSport={handleClickFederatedSwitch}
+            <TextInput
+              label="Apellido"
+              placeholder="Perez"
+              required
+              ref={lastnameRef}
             />
-          </div>
-          <Button type="submit" className="place-self-end">
-            Crear jugador
-          </Button>
-        </section>
-      </form>
+            <NumberInput
+              label="DNI"
+              placeholder="30123654"
+              minLength={8}
+              maxLength={9}
+              hideControls
+              required
+              ref={dniRef}
+            />
+            <TextInput
+              type="date"
+              label="Nacimiento"
+              placeholder="15/07/1995"
+              required
+              ref={birthdateRef}
+            />
+            <NumberInput
+              label="Celular"
+              placeholder="3435873290"
+              minLength={8}
+              maxLength={11}
+              hideControls
+              ref={cellphoneRef}
+            />
+            <TextInput
+              type="email"
+              label="Email"
+              placeholder="juanperez@gmail.com"
+              ref={emailRef}
+            />
+          </section>
+          <section className="grid">
+            <div className="flex flex-col gap-5">
+              <InputPhoto
+                photoSrc={photoSrc}
+                onClickFileButton={handleChangePhoto}
+                onClickDeleteButton={handleClickDeletePhoto}
+              />
+              <SportsSwitches
+                sports={sportsFromDb}
+                activeSports={activeSports}
+                federatedSports={federatedSports}
+                onClickSport={handleClickSportSwitch}
+                onClickFederatedSport={handleClickFederatedSwitch}
+              />
+            </div>
+            <Button type="submit" className="place-self-end">
+              Crear jugador
+            </Button>
+          </section>
+        </form>
+      ) : (
+        <Loader />
+      )}
     </Layout>
   );
 }

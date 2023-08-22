@@ -1,18 +1,15 @@
 import Layout from "@/components/layout";
 import { ActionIcon, NumberInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useRef } from "react";
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export function getServerSideProps() {
   return {
     props: {},
   };
-};
+}
 
-export default function Players({
-  players,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Players({ players }) {
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 
   return (

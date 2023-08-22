@@ -4,11 +4,11 @@ import { IconDoorExit } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 
 function LogoutButton() {
-  const supabase = useSupabase();
+  const { auth } = useSupabase();
   const router = useRouter();
 
   async function handleClick() {
-    await supabase.auth.signOut();
+    await auth.signOut();
     router.replace("/login");
   }
   return (

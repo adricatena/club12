@@ -1,12 +1,11 @@
 import toast from "@/components/toast";
-import { AuthController } from "@/entities/auth/auth.controller";
 import { useSupabase } from "@/hooks/use-supabase";
 import { Button, PasswordInput, TextInput, Title } from "@mantine/core";
 import { useRouter } from "next/router";
 import { FormEvent, useRef, useState } from "react";
 
 export default function Login() {
-  const supabase = useSupabase();
+  const { auth } = useSupabase();
   const router = useRouter();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -22,12 +21,10 @@ export default function Login() {
       setIsLoading(false);
       return;
     }
-
-    const { data, error } = await AuthController.signIn(email, password);
-    /* const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await auth.signInWithPassword({
       email,
       password,
-    }); */
+    });
     if (error) {
       toast.error("¡Error!", "Usuario y/o contraseña incorrectos");
       setIsLoading(false);
