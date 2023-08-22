@@ -2,6 +2,18 @@ import { client } from "@/database/client";
 import { Player, PlayerSport } from "./types";
 
 export class PlayerModel {
+  static async getPlayers(dni?: number) {
+    const data = dni
+      ? await this.#selectPlayer(dni)
+      : await this.#selectPlayers();
+    return data;
+  }
+
+  static async existPlayer(dni: number) {
+    const data = await this.#selectPlayer(dni);
+    return Boolean(data.length);
+  }
+
   static async createPlayer(playerData: Player, photo?: File) {
     const fileName = `${playerData.dni}_${playerData.name}_${playerData.lastname}`;
     if (photo) {
@@ -11,13 +23,23 @@ export class PlayerModel {
     return { id };
   }
 
-  static async createPlayerSport(playerSportData: PlayerSport[]) {
-    const { data, error } = await client
+  static async createPlayerSport(playerSportsData: PlayerSport[]) {
+    const { error } = await client
       .from("players_sports")
-      .insert(playerSportData)
-      .select()
-      .limit(1)
-      .single();
+      .insert([...playerSportsData]);
+    if (error) throw new Error(error.message);
+  }
+
+  static async #selectPlayers() {
+    const { data, error } = await client.from("players").select("*");
+    if (error) throw new Error(error.message);
+    return data;
+  }
+  static async #selectPlayer(dni: number) {
+    const { data, error } = await client
+      .from("players")
+      .select("*")
+      .eq("dni", dni);
     if (error) throw new Error(error.message);
     return data;
   }

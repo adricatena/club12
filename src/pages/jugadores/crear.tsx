@@ -1,6 +1,7 @@
 import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
+import toast from "@/components/toast";
 import { PlayerController } from "@/entities/player/player.controller";
 import { Player } from "@/entities/player/types";
 import { SportController } from "@/entities/sport/sport.controller";
@@ -9,8 +10,9 @@ import { FormEvent, MouseEvent, useRef, useState } from "react";
 import useSWR from "swr";
 
 function CreatePlayer() {
-  const { data: sportsFromDb } = useSWR("getSports", (_) =>
-    SportController.getSports().then((data) => data),
+  const { data: sportsFromDb } = useSWR(
+    "getSports",
+    async () => await SportController.getSports(),
   );
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -23,6 +25,7 @@ function CreatePlayer() {
   const [photoSrc, setPhotoSrc] = useState("");
   const [activeSports, setActiveSports] = useState<string[]>([]);
   const [federatedSports, setFederatedSports] = useState<string[]>([]);
+  const [isLoadingForm, setIsLoadingForm] = useState(false);
 
   function handleChangePhoto(file: File | null) {
     if (file) {
@@ -70,11 +73,12 @@ function CreatePlayer() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setIsLoadingForm(true);
     try {
       const { current: name } = nameRef;
       const { current: lastname } = lastnameRef;
       const { current: dni } = dniRef;
-      if (!(name && lastname && dni))
+      if (!(name && lastname && dni && sportsFromDb))
         throw new Error("Es necesario el nombre, apellido y dni");
 
       const newPlayerData: Player = {
@@ -93,8 +97,30 @@ function CreatePlayer() {
         activeSports,
         federatedSports,
       );
+
+      toast.success(
+        "Jugador creado correctamente",
+        `El jugador con DNI ${dni.value} se creo correctamente`,
+      );
+      nameRef.current!.value = "";
+      lastnameRef.current!.value = "";
+      dniRef.current!.value = "";
+      birthdateRef.current!.value = "";
+      emailRef.current!.value = "";
+      cellphoneRef.current!.value = "";
+      setPhoto(undefined);
+      setPhotoSrc("");
+      setActiveSports([]);
+      setFederatedSports([]);
     } catch (error) {
       console.error(error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Ocurrio un error creando el jugador";
+      toast.error("Error creando el jugador", message);
+    } finally {
+      setIsLoadingForm(false);
     }
   }
 
@@ -164,7 +190,11 @@ function CreatePlayer() {
                 onClickFederatedSport={handleClickFederatedSwitch}
               />
             </div>
-            <Button type="submit" className="place-self-end">
+            <Button
+              type="submit"
+              disabled={isLoadingForm}
+              className="place-self-end"
+            >
               Crear jugador
             </Button>
           </section>

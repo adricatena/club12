@@ -1,15 +1,15 @@
 import Layout from "@/components/layout";
+import { PlayerController } from "@/entities/player/player.controller";
 import { ActionIcon, NumberInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useRef } from "react";
+import useSWR from "swr";
 
-export function getServerSideProps() {
-  return {
-    props: {},
-  };
-}
-
-export default function Players({ players }) {
+export default function Players() {
+  const { data: players } = useSWR(
+    "getPlayers",
+    async () => await PlayerController.getPlayers(),
+  );
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -31,7 +31,7 @@ export default function Players({ players }) {
       ACA VA UNA TABLA CON LOS JUGADORES
       {players
         ? players.map((player) => (
-            <h5 key={player.lastname}>
+            <h5 key={player.id}>
               {player.name} {player.lastname}
             </h5>
           ))

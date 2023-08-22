@@ -13,7 +13,7 @@ type Props = {
 
 export default function Layout({ breadcrumbs, children }: Props) {
   return (
-    <div className="grid h-screen grid-cols-[min-content_auto] grid-rows-[min-content_auto]">
+    <div className="grid h-screen grid-cols-[180px_auto] grid-rows-[min-content_auto]">
       <header className="col-span-2 flex items-center justify-between gap-2 border-0 border-b-2 border-solid border-gray-200 p-4">
         <span className="flex items-center gap-2">
           <ULink href="/">
