@@ -23,6 +23,7 @@ export class PlayerController {
     const alreadyExists = await this.existPlayer(playerData.dni);
     if (alreadyExists)
       throw new Error(`El jugador con DNI ${playerData.dni} ya existe!`);
+
     const { id } = await PlayerModel.createPlayer(playerData, photo);
     if (sports?.length) {
       const playerSports = sports.map<PlayerSport>((sport) => {
@@ -38,7 +39,6 @@ export class PlayerController {
           federated,
         };
       });
-      console.log({ playerSports });
       await PlayerModel.createPlayerSport(playerSports);
     }
   }

@@ -6,8 +6,22 @@ import { PlayerController } from "@/entities/player/player.controller";
 import { Player } from "@/entities/player/types";
 import { SportController } from "@/entities/sport/sport.controller";
 import { Button, Loader, NumberInput, TextInput } from "@mantine/core";
-import { FormEvent, MouseEvent, useRef, useState } from "react";
+import { useForm } from "@mantine/form";
+import { MouseEvent, useState } from "react";
 import useSWR from "swr";
+
+interface Form {
+  name: string;
+  lastname: string;
+  dni: string;
+  birthdate: string;
+  email: string;
+  cellphone: string;
+  photoSrc: string;
+  photo?: File;
+  activeSports: string[];
+  federatedSports: string[];
+}
 
 function CreatePlayer() {
   const { data: sportsFromDb } = useSWR(
@@ -15,28 +29,36 @@ function CreatePlayer() {
     async () => await SportController.getSports(),
   );
 
-  const nameRef = useRef<HTMLInputElement>(null);
-  const lastnameRef = useRef<HTMLInputElement>(null);
-  const dniRef = useRef<HTMLInputElement>(null);
-  const birthdateRef = useRef<HTMLInputElement>(null);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const cellphoneRef = useRef<HTMLInputElement>(null);
-  const [photo, setPhoto] = useState<File>();
-  const [photoSrc, setPhotoSrc] = useState("");
-  const [activeSports, setActiveSports] = useState<string[]>([]);
-  const [federatedSports, setFederatedSports] = useState<string[]>([]);
+  const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
+    initialValues: {
+      name: "",
+      lastname: "",
+      dni: "",
+      birthdate: "",
+      email: "",
+      cellphone: "",
+      photoSrc: "",
+      activeSports: [],
+      federatedSports: [],
+    },
+  });
+
   const [isLoadingForm, setIsLoadingForm] = useState(false);
 
   function handleChangePhoto(file: File | null) {
     if (file) {
-      setPhoto(file);
-      setPhotoSrc(URL.createObjectURL(file));
+      setValues({
+        photo: file,
+        photoSrc: URL.createObjectURL(file),
+      });
     }
   }
 
   function handleClickDeletePhoto() {
-    setPhoto(undefined);
-    setPhotoSrc("");
+    setValues({
+      photoSrc: "",
+      photo: undefined,
+    });
   }
 
   function handleClickSportSwitch({
@@ -44,16 +66,20 @@ function CreatePlayer() {
   }: MouseEvent<HTMLInputElement>) {
     const { checked, value } = currentTarget;
     if (checked) {
-      setActiveSports([...activeSports, value]);
+      setValues({
+        activeSports: [...values.activeSports, value],
+      });
     } else {
-      const filteredActiveSports = activeSports.filter(
+      const filteredActiveSports = values.activeSports.filter(
         (sport) => sport !== value,
       );
-      const filteredFederatedSports = federatedSports.filter(
+      const filteredFederatedSports = values.federatedSports.filter(
         (sport) => sport !== value,
       );
-      setActiveSports([...filteredActiveSports]);
-      setFederatedSports([...filteredFederatedSports]);
+      setValues({
+        activeSports: [...filteredActiveSports],
+        federatedSports: [...filteredFederatedSports],
+      });
     }
   }
 
@@ -62,56 +88,49 @@ function CreatePlayer() {
   }: MouseEvent<HTMLInputElement>) {
     const { checked, value } = currentTarget;
     if (checked) {
-      setFederatedSports([...federatedSports, value]);
+      setValues({
+        federatedSports: [...values.federatedSports, value],
+      });
     } else {
-      const filteredFederatedSports = federatedSports.filter(
+      const filteredFederatedSports = values.federatedSports.filter(
         (sport) => sport !== value,
       );
-      setFederatedSports(filteredFederatedSports);
+      setValues({
+        federatedSports: filteredFederatedSports,
+      });
     }
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(values: Form) {
     setIsLoadingForm(true);
     try {
-      const { current: name } = nameRef;
-      const { current: lastname } = lastnameRef;
-      const { current: dni } = dniRef;
+      const { name, lastname, dni } = values;
+
       if (!(name && lastname && dni && sportsFromDb))
         throw new Error("Es necesario el nombre, apellido y dni");
 
       const newPlayerData: Player = {
-        name: nameRef.current?.value as string,
-        lastname: lastnameRef.current?.value as string,
-        dni: Number(dniRef.current?.value),
-        birthdate: birthdateRef.current?.value as string,
-        email: emailRef.current?.value,
-        cellphone: cellphoneRef.current?.value,
+        name,
+        lastname,
+        dni: Number(dni),
+        birthdate: values.birthdate,
+        email: values.email,
+        cellphone: values.cellphone,
       };
 
       await PlayerController.createPlayer(
         newPlayerData,
         sportsFromDb,
-        photo,
-        activeSports,
-        federatedSports,
+        values.photo,
+        values.activeSports,
+        values.federatedSports,
       );
 
       toast.success(
         "Jugador creado correctamente",
-        `El jugador con DNI ${dni.value} se creo correctamente`,
+        `El jugador con DNI ${dni} se creo correctamente`,
       );
-      nameRef.current!.value = "";
-      lastnameRef.current!.value = "";
-      dniRef.current!.value = "";
-      birthdateRef.current!.value = "";
-      emailRef.current!.value = "";
-      cellphoneRef.current!.value = "";
-      setPhoto(undefined);
-      setPhotoSrc("");
-      setActiveSports([]);
-      setFederatedSports([]);
+      reset();
     } catch (error) {
       console.error(error);
       const message =
@@ -129,20 +148,20 @@ function CreatePlayer() {
       {sportsFromDb ? (
         <form
           className="flex w-full max-w-3xl items-stretch gap-7 p-4"
-          onSubmit={handleSubmit}
+          onSubmit={onSubmit(handleSubmit)}
         >
           <section className="flex w-full flex-col gap-5">
             <TextInput
               label="Nombre"
               placeholder="Juan"
               required
-              ref={nameRef}
+              {...getInputProps("name")}
             />
             <TextInput
               label="Apellido"
               placeholder="Perez"
               required
-              ref={lastnameRef}
+              {...getInputProps("lastname")}
             />
             <NumberInput
               label="DNI"
@@ -151,14 +170,14 @@ function CreatePlayer() {
               maxLength={9}
               hideControls
               required
-              ref={dniRef}
+              {...getInputProps("dni")}
             />
             <TextInput
               type="date"
               label="Nacimiento"
               placeholder="15/07/1995"
               required
-              ref={birthdateRef}
+              {...getInputProps("birthdate")}
             />
             <NumberInput
               label="Celular"
@@ -166,26 +185,26 @@ function CreatePlayer() {
               minLength={8}
               maxLength={11}
               hideControls
-              ref={cellphoneRef}
+              {...getInputProps("cellphone")}
             />
             <TextInput
               type="email"
               label="Email"
               placeholder="juanperez@gmail.com"
-              ref={emailRef}
+              {...getInputProps("email")}
             />
           </section>
           <section className="grid">
             <div className="flex flex-col gap-5">
               <InputPhoto
-                photoSrc={photoSrc}
+                photoSrc={values.photoSrc}
                 onClickFileButton={handleChangePhoto}
                 onClickDeleteButton={handleClickDeletePhoto}
               />
               <SportsSwitches
                 sports={sportsFromDb}
-                activeSports={activeSports}
-                federatedSports={federatedSports}
+                activeSports={values.activeSports}
+                federatedSports={values.federatedSports}
                 onClickSport={handleClickSportSwitch}
                 onClickFederatedSport={handleClickFederatedSwitch}
               />
