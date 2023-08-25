@@ -56,7 +56,7 @@ export default function Layout({ breadcrumbs, children }: Props) {
           ))}
         </nav>
       </aside>
-      <main className="col-span-1 mx-3 my-2 grid items-start justify-items-center">
+      <main className="col-span-1 mx-3 my-2 flex flex-col items-start justify-start">
         {children}
       </main>
     </div>
