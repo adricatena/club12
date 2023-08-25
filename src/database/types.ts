@@ -53,8 +53,8 @@ export interface Database {
           dni: number
           email?: string | null
           id?: string
-          lastname?: string
-          name?: string
+          lastname: string
+          name: string
           observations?: string | null
         }
         Update: {
@@ -180,27 +180,6 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
-      }
-      test: {
-        Row: {
-          apellido: string
-          created_at: string | null
-          id: number
-          nombre: string | null
-        }
-        Insert: {
-          apellido?: string
-          created_at?: string | null
-          id?: number
-          nombre?: string | null
-        }
-        Update: {
-          apellido?: string
-          created_at?: string | null
-          id?: number
-          nombre?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {
