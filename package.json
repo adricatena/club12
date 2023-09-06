@@ -26,7 +26,6 @@
     "@supabase/auth-helpers-react": "^0.4.0",
     "@supabase/supabase-js": "^2.26.0",
     "@tabler/icons-react": "^2.24.0",
-    "@tanstack/react-table": "^8.9.3",
     "@types/node": "20.4.0",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
@@ -35,7 +34,6 @@
     "next": "13.4.9",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "swr": "^2.2.1",
     "typescript": "5.1.6"
   },
   "devDependencies": {
