@@ -22,7 +22,7 @@ export const navLinks: NavLink[] = [
         label: "Crear jugador",
       },
       {
-        path: "/jugadores/buscar",
+        path: "/jugadores",
         label: "Buscar jugador",
       },
     ],

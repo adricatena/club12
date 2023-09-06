@@ -1,11 +1,12 @@
 import Layout from "@/components/layout";
+import ULink from "@/components/unstyled-link";
 import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
 import { Player } from "@/entities/player/types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
-import { MouseEvent, useRef, useState } from "react";
+import { FormEvent, MouseEvent, useRef, useState } from "react";
 
 export const getServerSideProps: GetServerSideProps<{
   playersFromDb: Player[];
@@ -54,6 +55,9 @@ export default function Players({
 
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 
+  const Arrow =
+    orderMethod === OrderMethods.ascendent ? IconArrowDown : IconArrowUp;
+
   function handleClickColumnHeader(event: MouseEvent<HTMLTableCellElement>) {
     const { id } = event.currentTarget;
     let newOrderMethod: OrderMethods;
@@ -63,7 +67,7 @@ export default function Players({
       newOrderMethod = ORDER_METHODS[OrderMethods.default];
       setOrderBy(id as ColumnKey);
     }
-    const sortedPlayers = [...players!];
+    const sortedPlayers = [...players];
     sortedPlayers.sort((prevPlayer, nextPlayer) => {
       const prevPlayerValue = prevPlayer[id as ColumnKey];
       const nextPlayerValue = nextPlayer[id as ColumnKey];
@@ -76,19 +80,32 @@ export default function Players({
     setOrderMethod(newOrderMethod);
   }
 
-  const Arrow =
-    orderMethod === OrderMethods.ascendent ? IconArrowDown : IconArrowUp;
+  function handleSearchPlayerSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const searchedInput = searchPlayerRef.current?.value;
+    if (!searchedInput) {
+      setPlayers(playersFromDb);
+      return;
+    }
+    const filterPlayers = players.filter((player) =>
+      player.dni.toString().includes(searchedInput),
+    );
+    setPlayers(filterPlayers);
+  }
 
   return (
     <Layout breadcrumbs={["Jugadores"]}>
       <>
         <section className="flex items-center justify-between">
-          <form className="flex items-center">
+          <form
+            className="flex items-center"
+            onSubmit={handleSearchPlayerSubmit}
+          >
             <NumberInput
               label="Buscar por DNI"
               hideControls
               rightSection={
-                <ActionIcon variant="transparent" size="md">
+                <ActionIcon type="submit" variant="transparent" size="md">
                   <IconSearch />
                 </ActionIcon>
               }
@@ -119,7 +136,11 @@ export default function Players({
               {players.map((player) => (
                 <tr key={player.dni}>
                   {columnsKeys.map((columnKey) => (
-                    <td key={columnKey.key}>{player[columnKey.key]}</td>
+                    <td key={columnKey.key}>
+                      <ULink href={`/jugadores/${player.dni}`}>
+                        {player[columnKey.key]}
+                      </ULink>
+                    </td>
                   ))}
                 </tr>
               ))}
