@@ -1,19 +1,26 @@
-import { Sport } from "../sport/types";
+import type { Database } from "@/database/types";
+import { SupabaseClient } from "@supabase/supabase-js";
+import type { Sport } from "../sport/types";
 import { PlayerModel } from "./player.model";
-import { Player, PlayerSport } from "./types";
+import type { Player, PlayerSport } from "./types";
 
 export class PlayerController {
-  static async getPlayers(dni?: number) {
-    const players = await PlayerModel.getPlayers(dni);
+  playerModel: PlayerModel;
+  constructor(client: SupabaseClient<Database>) {
+    this.playerModel = new PlayerModel(client);
+  }
+
+  async getPlayers(dni?: number) {
+    const players = await this.playerModel.getPlayers(dni);
     return players;
   }
 
-  static async existPlayer(dni: number) {
-    const alreadyExists = await PlayerModel.existPlayer(dni);
+  async existPlayer(dni: number) {
+    const alreadyExists = await this.playerModel.existPlayer(dni);
     return alreadyExists;
   }
 
-  static async createPlayer(
+  async createPlayer(
     playerData: Player,
     sportsFromDb: Sport[],
     photo?: File,
@@ -24,7 +31,7 @@ export class PlayerController {
     if (alreadyExists)
       throw new Error(`El jugador con DNI ${playerData.dni} ya existe!`);
 
-    const { id } = await PlayerModel.createPlayer(playerData, photo);
+    const { id } = await this.playerModel.createPlayer(playerData, photo);
     if (sports?.length) {
       const playerSports = sports.map<PlayerSport>((sport) => {
         const sport_id =
@@ -39,7 +46,7 @@ export class PlayerController {
           federated,
         };
       });
-      await PlayerModel.createPlayerSport(playerSports);
+      await this.playerModel.createPlayerSport(playerSports);
     }
   }
 }

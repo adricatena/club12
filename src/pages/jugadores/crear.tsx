@@ -2,33 +2,33 @@ import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
 import toast from "@/components/toast";
+import { client, serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
-import { Player } from "@/entities/player/types";
+import type { Player } from "@/entities/player/types";
 import { SportController } from "@/entities/sport/sport.controller";
+import type { Sport } from "@/entities/sport/types";
 import { Button, Loader, NumberInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { MouseEvent, useState } from "react";
-import useSWR from "swr";
 
-interface Form {
-  name: string;
-  lastname: string;
-  dni: string;
-  birthdate: string;
-  email: string;
-  cellphone: string;
-  photoSrc: string;
-  photo?: File;
-  activeSports: string[];
-  federatedSports: string[];
-}
+export const getServerSideProps: GetServerSideProps<{
+  sportsFromDb: Sport[];
+}> = async (context) => {
+  const client = serverClient(context);
+  const sportController = new SportController(client);
+  const sportsFromDb = await sportController.getSports();
 
-function CreatePlayer() {
-  const { data: sportsFromDb } = useSWR(
-    "getSports",
-    async () => await SportController.getSports(),
-  );
+  return {
+    props: {
+      sportsFromDb,
+    },
+  };
+};
 
+function CreatePlayer({
+  sportsFromDb,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
     initialValues: {
       name: "",
@@ -118,7 +118,8 @@ function CreatePlayer() {
         cellphone: values.cellphone,
       };
 
-      await PlayerController.createPlayer(
+      const playerController = new PlayerController(client);
+      await playerController.createPlayer(
         newPlayerData,
         sportsFromDb,
         values.photo,
@@ -223,6 +224,19 @@ function CreatePlayer() {
       )}
     </Layout>
   );
+}
+
+interface Form {
+  name: string;
+  lastname: string;
+  dni: string;
+  birthdate: string;
+  email: string;
+  cellphone: string;
+  photoSrc: string;
+  photo?: File;
+  activeSports: string[];
+  federatedSports: string[];
 }
 
 export default CreatePlayer;

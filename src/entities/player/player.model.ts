@@ -1,20 +1,26 @@
-import { client } from "@/database/client";
-import { Player, PlayerSport } from "./types";
+import type { Database } from "@/database/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Player, PlayerSport } from "./types";
 
 export class PlayerModel {
-  static async getPlayers(dni?: number) {
+  client: SupabaseClient<Database>;
+  constructor(client: SupabaseClient<Database>) {
+    this.client = client;
+  }
+
+  async getPlayers(dni?: number) {
     const data = dni
       ? await this.#selectPlayer(dni)
       : await this.#selectPlayers();
     return data;
   }
 
-  static async existPlayer(dni: number) {
+  async existPlayer(dni: number) {
     const data = await this.#selectPlayer(dni);
     return Boolean(data.length);
   }
 
-  static async createPlayer(playerData: Player, photo?: File) {
+  async createPlayer(playerData: Player, photo?: File) {
     const fileName = `${playerData.dni}_${playerData.name}_${playerData.lastname}`;
     if (photo) {
       await this.#uploadPhoto(fileName, photo);
@@ -23,20 +29,20 @@ export class PlayerModel {
     return { id };
   }
 
-  static async createPlayerSport(playerSportsData: PlayerSport[]) {
-    const { error } = await client
+  async createPlayerSport(playerSportsData: PlayerSport[]) {
+    const { error } = await this.client
       .from("players_sports")
       .insert([...playerSportsData]);
     if (error) throw new Error(error.message);
   }
 
-  static async #selectPlayers() {
-    const { data, error } = await client.from("players").select("*");
+  async #selectPlayers() {
+    const { data, error } = await this.client.from("players").select("*");
     if (error) throw new Error(error.message);
     return data;
   }
-  static async #selectPlayer(dni: number) {
-    const { data, error } = await client
+  async #selectPlayer(dni: number) {
+    const { data, error } = await this.client
       .from("players")
       .select("*")
       .eq("dni", dni);
@@ -44,8 +50,8 @@ export class PlayerModel {
     return data;
   }
 
-  static async #insertPlayer(playerData: Player) {
-    const { data, error } = await client
+  async #insertPlayer(playerData: Player) {
+    const { data, error } = await this.client
       .from("players")
       .insert(playerData)
       .select("id")
@@ -55,8 +61,8 @@ export class PlayerModel {
     return data;
   }
 
-  static async #uploadPhoto(fileName: string, photo: File) {
-    const { data, error } = await client.storage
+  async #uploadPhoto(fileName: string, photo: File) {
+    const { data, error } = await this.client.storage
       .from("players")
       .upload(`public/${fileName}`, photo);
     if (error) throw new Error(error.message);

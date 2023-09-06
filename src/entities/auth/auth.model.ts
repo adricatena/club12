@@ -1,4 +1,4 @@
-import { client } from "@/database/client";
+import { client } from "@/database/clients";
 
 export class AuthModel {
   static async logout() {

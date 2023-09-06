@@ -1,10 +1,25 @@
 import Layout from "@/components/layout";
+import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
 import { Player } from "@/entities/player/types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
+import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { MouseEvent, useRef, useState } from "react";
-import useSWR from "swr";
+
+export const getServerSideProps: GetServerSideProps<{
+  playersFromDb: Player[];
+}> = async (context) => {
+  const client = serverClient(context);
+  const playerController = new PlayerController(client);
+  const playersFromDb = (await playerController.getPlayers()) as Player[];
+
+  return {
+    props: {
+      playersFromDb,
+    },
+  };
+};
 
 type ColumnKey = "dni" | "name" | "lastname" | "birthdate";
 
@@ -30,15 +45,12 @@ const ORDER_METHODS = {
   [OrderMethods.descendent]: OrderMethods.ascendent,
 };
 
-export default function Players() {
+export default function Players({
+  playersFromDb,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const [orderBy, setOrderBy] = useState<ColumnKey>();
   const [orderMethod, setOrderMethod] = useState(OrderMethods.default);
-  const [players, setPlayers] = useState<Player[]>();
-
-  useSWR("getPlayers", async () => {
-    const data = (await PlayerController.getPlayers()) as Player[];
-    setPlayers(data);
-  });
+  const [players, setPlayers] = useState<Player[]>(playersFromDb);
 
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 

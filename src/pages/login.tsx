@@ -1,9 +1,11 @@
 import toast from "@/components/toast";
 import { AuthController } from "@/entities/auth/auth.controller";
 import { Button, PasswordInput, TextInput, Title } from "@mantine/core";
+import { useRouter } from "next/router";
 import { FormEvent, useRef, useState } from "react";
 
 export default function Login() {
+  const router = useRouter();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +22,7 @@ export default function Login() {
     }
     try {
       await AuthController.login(email, password);
+      router.push("/");
     } catch (error) {
       toast.error("¡Error!", "Usuario y/o contraseña incorrectos");
       setIsLoading(false);
