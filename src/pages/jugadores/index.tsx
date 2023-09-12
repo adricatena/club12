@@ -94,7 +94,7 @@ export default function Players({
   }
 
   return (
-    <Layout breadcrumbs={["Jugadores"]}>
+    <Layout breadcrumbs={[{ name: "Jugadores", href: "/jugadores" }]}>
       <>
         <section className="flex items-center justify-between">
           <form

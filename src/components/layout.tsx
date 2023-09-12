@@ -6,8 +6,13 @@ import { ReactNode } from "react";
 import LogoutButton from "./logout-button";
 import ULink from "./unstyled-link";
 
+interface Breadcrumb {
+  name: string;
+  href: string;
+}
+
 type Props = {
-  breadcrumbs?: string[];
+  breadcrumbs?: Breadcrumb[];
   children: ReactNode;
 };
 
@@ -20,14 +25,19 @@ export default function Layout({ breadcrumbs, children }: Props) {
             <Title order={2}>Club 12</Title>
           </ULink>
           {breadcrumbs
-            ? breadcrumbs.map((breadcrumb) => (
-                <span key={breadcrumb} className="flex items-center gap-1">
-                  <IconChevronRight />
-                  <ULink href={`/${breadcrumb.toLowerCase()}`}>
-                    <Title order={4}>{breadcrumb}</Title>
-                  </ULink>
-                </span>
-              ))
+            ? breadcrumbs.map((breadcrumb) => {
+                return (
+                  <span
+                    key={breadcrumb.name}
+                    className="flex items-center gap-1"
+                  >
+                    <IconChevronRight />
+                    <ULink href={breadcrumb.href}>
+                      <Title order={4}>{breadcrumb.name}</Title>
+                    </ULink>
+                  </span>
+                );
+              })
             : null}
         </span>
         <LogoutButton />
