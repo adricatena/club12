@@ -145,7 +145,12 @@ function CreatePlayer({
   }
 
   return (
-    <Layout breadcrumbs={["Jugadores", "Crear"]}>
+    <Layout
+      breadcrumbs={[
+        { name: "Jugadores", href: "/jugadores" },
+        { name: "Crear", href: "/jugadores/crear" },
+      ]}
+    >
       {sportsFromDb ? (
         <form
           className="flex w-full max-w-3xl items-stretch gap-7 self-center p-4"

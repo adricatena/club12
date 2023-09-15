@@ -46,6 +46,7 @@ export class PlayerController {
           federated,
         };
       });
+
       await this.playerModel.createPlayerSport(playerSports);
     }
   }
