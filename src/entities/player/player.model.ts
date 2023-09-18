@@ -1,6 +1,6 @@
 import type { Database } from "@/database/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Player, PlayerSport } from "./types";
+import type { Player, PlayerSport } from "./player.types";
 
 export class PlayerModel {
   client: SupabaseClient<Database>;

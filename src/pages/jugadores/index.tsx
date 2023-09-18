@@ -2,7 +2,7 @@ import Layout from "@/components/layout";
 import ULink from "@/components/unstyled-link";
 import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
-import { Player } from "@/entities/player/types";
+import type { Player } from "@/entities/player/player.types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps, InferGetServerSidePropsType } from "next";

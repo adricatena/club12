@@ -1,4 +1,4 @@
-import { Sport } from "@/entities/sport/types";
+import type { Sport } from "@/entities/sport/sport.types";
 import { Switch } from "@mantine/core";
 import { MouseEvent } from "react";
 

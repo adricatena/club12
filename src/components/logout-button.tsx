@@ -15,7 +15,7 @@ function LogoutButton() {
     <Button
       size="xs"
       color="dark"
-      leftIcon={<IconDoorExit size={15} />}
+      leftSection={<IconDoorExit size={15} />}
       className="m-2"
       onClick={handleClick}
     >

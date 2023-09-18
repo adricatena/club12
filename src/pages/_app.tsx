@@ -1,6 +1,7 @@
 import { client } from "@/database/clients";
 import "@/styles/globals.css";
 import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.css";
 import { Notifications } from "@mantine/notifications";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import type { AppProps } from "next/app";
@@ -20,7 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
         supabaseClient={client}
         initialSession={pageProps.initialSession}
       >
-        <MantineProvider withGlobalStyles withNormalizeCSS>
+        <MantineProvider>
           <Component {...pageProps} />
           <Notifications />
         </MantineProvider>
