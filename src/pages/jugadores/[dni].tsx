@@ -3,12 +3,15 @@ import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
 import type { PlayerFromDb } from "@/entities/player/player.types";
 import { Alert, Button } from "@mantine/core";
-import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import { type GetServerSideProps } from "next";
 import Link from "next/link";
 
-export const getServerSideProps: GetServerSideProps<{
+interface Props {
   playerFromDb: PlayerFromDb | null;
-}> = async (context) => {
+}
+export const getServerSideProps: GetServerSideProps<Props> = async (
+  context,
+) => {
   const { query } = context;
   const dni = Number(query.dni);
 
@@ -36,36 +39,9 @@ export const getServerSideProps: GetServerSideProps<{
       playerFromDb,
     },
   };
-
-  /* if (!isNaN(Number(dni))) {
-    const playerController = new PlayerController(serverClient(context));
-    const playerFromDb = await playerController.getPlayers(Number(dni));
-
-    if (!playerFromDb || playerFromDb.length === 0) {
-      return {
-        props: {
-          playerFromDb: null,
-        },
-      };
-    }
-
-    return {
-      props: {
-        playerFromDb,
-      },
-    };
-  }
-
-  return {
-    props: {
-      playerFromDb: null,
-    },
-  }; */
 };
 
-function Player({
-  playerFromDb,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function Player({ playerFromDb }: Props) {
   if (!playerFromDb) {
     return (
       <Layout>
