@@ -9,6 +9,7 @@ import Link from "next/link";
 export const getServerSideProps: GetServerSideProps<{
   playerFromDb: Player;
 }> = async (context) => {
+  
   console.log(context);
   const { query } = context;
   const { dni } = query;
