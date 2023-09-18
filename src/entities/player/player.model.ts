@@ -8,16 +8,19 @@ export class PlayerModel {
     this.client = client;
   }
 
-  async getPlayers(dni?: number) {
-    const data = dni
-      ? await this.#selectPlayer(dni)
-      : await this.#selectPlayers();
+  async getPlayers() {
+    const data = await this.#selectPlayers();
+    return data;
+  }
+
+  async getPlayer(dni: number) {
+    const data = await this.#selectPlayer(dni);
     return data;
   }
 
   async existPlayer(dni: number) {
     const data = await this.#selectPlayer(dni);
-    return Boolean(data.length);
+    return Boolean(data);
   }
 
   async createPlayer(playerData: Player, photo?: File) {
@@ -45,9 +48,10 @@ export class PlayerModel {
     const { data, error } = await this.client
       .from("players")
       .select("*")
-      .eq("dni", dni);
+      .eq("dni", dni)
+      .limit(1);
     if (error) throw new Error(error.message);
-    return data;
+    return data[0];
   }
 
   async #insertPlayer(playerData: Player) {

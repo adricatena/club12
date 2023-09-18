@@ -1,11 +1,16 @@
-export interface Player {
-  name: string;
-  lastname: string;
-  dni: number;
+import { Database } from "@/database/types";
+
+export type Player = {
   birthdate: string;
-  email?: string;
-  cellphone?: string;
-}
+  cellphone: string | null;
+  dni: number;
+  email: string | null;
+  lastname: string;
+  name: string;
+  observations?: string;
+};
+
+export type PlayerFromDb = Database["public"]["Tables"]["players"]["Row"];
 
 export type PlayerSport = {
   player_id: string;

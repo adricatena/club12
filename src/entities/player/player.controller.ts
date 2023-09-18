@@ -10,8 +10,12 @@ export class PlayerController {
     this.playerModel = new PlayerModel(client);
   }
 
-  async getPlayers(dni?: number) {
-    const players = await this.playerModel.getPlayers(dni);
+  async getPlayers() {
+    const players = await this.playerModel.getPlayers();
+    return players;
+  }
+  async getPlayer(dni: number) {
+    const players = await this.playerModel.getPlayer(dni);
     return players;
   }
 
