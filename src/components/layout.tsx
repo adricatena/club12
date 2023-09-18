@@ -48,10 +48,10 @@ export default function Layout({ breadcrumbs, children }: Props) {
             <NavLink
               key={navLink.label}
               label={navLink.label}
-              icon={navLink.icon}
+              leftSection={navLink.icon}
               classNames={{
                 root: "p-4",
-                icon: "mr-2",
+                section: "mr-2",
               }}
             >
               {navLink.actions.map((action) => (
