@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 
-type Props = {
+interface Props {
   href: string;
   children: ReactNode;
   withUnderline?: boolean;
-};
+}
 
 export default function ULink({ href, withUnderline = true, children }: Props) {
   return (

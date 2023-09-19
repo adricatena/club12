@@ -17,3 +17,8 @@ export type PlayerSport = {
   sport_id: string;
   federated: boolean;
 };
+
+export type PlayerSportFromDb = {
+  federated: boolean;
+  name: string;
+};

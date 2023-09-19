@@ -1,6 +1,7 @@
 import type { Database } from "@/database/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { Sport } from "../sport/sport.types";
+import { createFileName } from "./player.helper";
 import { PlayerModel } from "./player.model";
 import type { Player, PlayerSport } from "./player.types";
 
@@ -19,9 +20,19 @@ export class PlayerController {
     return players;
   }
 
+  getPlayerPhoto(dni: number, name: string, lastname: string) {
+    const fileName = createFileName(dni.toString(10), name, lastname);
+    return this.playerModel.getPlayerPhotoUrl(fileName);
+  }
+
+  async getPlayerSports(id: string) {
+    const data = await this.playerModel.getPlayerSports(id);
+    return data;
+  }
+
   async existPlayer(dni: number) {
-    const alreadyExists = await this.playerModel.existPlayer(dni);
-    return alreadyExists;
+    const data = await this.playerModel.getPlayer(dni);
+    return Boolean(data);
   }
 
   async createPlayer(
