@@ -9,12 +9,15 @@ import { SportController } from "@/entities/sport/sport.controller";
 import type { Sport } from "@/entities/sport/sport.types";
 import { Button, Loader, NumberInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import type { GetServerSideProps } from "next";
 import { MouseEvent, useState } from "react";
 
-export const getServerSideProps: GetServerSideProps<{
+interface Props {
   sportsFromDb: Sport[];
-}> = async (context) => {
+}
+export const getServerSideProps: GetServerSideProps<Props> = async (
+  context,
+) => {
   const client = serverClient(context);
   const sportController = new SportController(client);
   const sportsFromDb = await sportController.getSports();
@@ -26,9 +29,7 @@ export const getServerSideProps: GetServerSideProps<{
   };
 };
 
-function CreatePlayer({
-  sportsFromDb,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function CreatePlayer({ sportsFromDb }: Props) {
   const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
     initialValues: {
       name: "",
@@ -231,7 +232,7 @@ function CreatePlayer({
   );
 }
 
-interface Form {
+type Form = {
   name: string;
   lastname: string;
   dni: string;
@@ -242,6 +243,6 @@ interface Form {
   photo?: File;
   activeSports: string[];
   federatedSports: string[];
-}
+};
 
 export default CreatePlayer;

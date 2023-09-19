@@ -5,12 +5,15 @@ import { PlayerController } from "@/entities/player/player.controller";
 import type { Player } from "@/entities/player/player.types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
-import type { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import type { GetServerSideProps } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
-export const getServerSideProps: GetServerSideProps<{
+interface Props {
   playersFromDb: Player[];
-}> = async (context) => {
+}
+export const getServerSideProps: GetServerSideProps<Props> = async (
+  context,
+) => {
   const client = serverClient(context);
   const playerController = new PlayerController(client);
   const playersFromDb = (await playerController.getPlayers()) as Player[];
@@ -46,9 +49,7 @@ const ORDER_METHODS = {
   [OrderMethods.descendent]: OrderMethods.ascendent,
 };
 
-export default function Players({
-  playersFromDb,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Players({ playersFromDb }: Props) {
   const [orderBy, setOrderBy] = useState<ColumnKey>();
   const [orderMethod, setOrderMethod] = useState(OrderMethods.default);
   const [players, setPlayers] = useState<Player[]>(playersFromDb);
@@ -115,10 +116,10 @@ export default function Players({
         </section>
         {players ? (
           <Table>
-            <thead>
-              <tr>
+            <Table.Thead>
+              <Table.Tr>
                 {columnsKeys.map((columnKey) => (
-                  <th
+                  <Table.Th
                     key={columnKey.key}
                     id={columnKey.key}
                     className="relative"
@@ -128,23 +129,23 @@ export default function Players({
                     {columnKey.key === orderBy ? (
                       <Arrow className="absolute bottom-1.5" />
                     ) : null}
-                  </th>
+                  </Table.Th>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
               {players.map((player) => (
-                <tr key={player.dni}>
+                <Table.Tr key={player.dni}>
                   {columnsKeys.map((columnKey) => (
-                    <td key={columnKey.key}>
+                    <Table.Td key={columnKey.key}>
                       <ULink href={`/jugadores/${player.dni}`}>
                         {player[columnKey.key]}
                       </ULink>
-                    </td>
+                    </Table.Td>
                   ))}
-                </tr>
+                </Table.Tr>
               ))}
-            </tbody>
+            </Table.Tbody>
           </Table>
         ) : (
           <Loader />

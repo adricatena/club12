@@ -34,6 +34,18 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     };
   }
 
+  const photoUrl = playerController.getPlayerPhoto(
+    playerFromDb.dni,
+    playerFromDb.name,
+    playerFromDb.lastname,
+  );
+  console.log({ photoUrl });
+
+  const playerSportsFromDb = await playerController.getPlayerSports(
+    playerFromDb.id,
+  );
+  console.log({ playerSportsFromDb });
+
   return {
     props: {
       playerFromDb,
@@ -62,6 +74,7 @@ function Player({ playerFromDb }: Props) {
       </Layout>
     );
   }
+
   return <Layout>Player</Layout>;
 }
 

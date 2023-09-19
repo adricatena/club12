@@ -1,10 +1,10 @@
 import { Avatar, Button, FileButton } from "@mantine/core";
 
-type Props = {
+interface Props {
   photoSrc: string | "";
   onClickFileButton: (file: File | null) => void;
   onClickDeleteButton: () => void;
-};
+}
 
 function InputPhoto({
   photoSrc,

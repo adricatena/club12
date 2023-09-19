@@ -11,10 +11,10 @@ interface Breadcrumb {
   href: string;
 }
 
-type Props = {
+interface Props {
   breadcrumbs?: Breadcrumb[];
   children: ReactNode;
-};
+}
 
 export default function Layout({ breadcrumbs, children }: Props) {
   return (
