@@ -36,31 +36,6 @@ export const getServerSideProps: GetServerSideProps<{
       playerFromDb,
     },
   };
-
-  /* if (!isNaN(Number(dni))) {
-    const playerController = new PlayerController(serverClient(context));
-    const playerFromDb = await playerController.getPlayers(Number(dni));
-
-    if (!playerFromDb || playerFromDb.length === 0) {
-      return {
-        props: {
-          playerFromDb: null,
-        },
-      };
-    }
-
-    return {
-      props: {
-        playerFromDb,
-      },
-    };
-  }
-
-  return {
-    props: {
-      playerFromDb: null,
-    },
-  }; */
 };
 
 function Player({
