@@ -20,6 +20,10 @@
 
 `npx supabase db diff --schema public`
 
+### Aplciar migraciones locales
+
+`npx supabase migration up`
+
 ### Deploy a DB remota
 
 - `npx supabase db push` => debe estar previamente linkeado con el proyecto remoto
