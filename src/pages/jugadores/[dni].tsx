@@ -3,7 +3,7 @@ import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
 import { SportController } from "@/entities/sport/sport.controller";
 import type { PlayerFromDb } from "@/entities/player/player.types";
-import { Alert, Button, TextInput, NumberInput } from "@mantine/core";
+import { Alert, Button, TextInput, NumberInput, Textarea, Switch } from "@mantine/core";
 import { type GetServerSideProps } from "next";
 import type { Sport } from "@/entities/sport/sport.types";
 import Link from "next/link";
@@ -194,9 +194,11 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
           ? error.message
           : "Ocurrió un error al editar el jugador";
       toast.error("Error al editar el jugador", message);
-    }
-      
+    }  
   }
+  // onClickDisablePlayer{
+    
+  // }
 
     return (
 
@@ -241,7 +243,10 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
               hideControls
               {...getInputProps("cellphone")}
             />
-            <TextInput
+            <Textarea
+              autosize
+              minRows={2}
+              maxRows={4}
               label="Observación"
               placeholder="Observaciones..."
               {...getInputProps("observation")}
@@ -260,6 +265,11 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
                 federatedSports={values.federatedSports}
                 onClickSport={handleClickSportSwitch}
                 onClickFederatedSport={handleClickFederatedSwitch}
+              />
+              <Switch
+                label={"Activo"}
+                className="pb-1"
+                // onClick={onClickDisablePlayer}
               />
             </div>
             <Button
