@@ -1,8 +1,9 @@
 import { client } from "@/database/clients";
-import "@/styles/globals.css";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import { Notifications } from "@mantine/notifications";
+import "@mantine/notifications/styles.css";
+import "@/styles/globals.css";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import type { AppProps } from "next/app";
 import Head from "next/head";

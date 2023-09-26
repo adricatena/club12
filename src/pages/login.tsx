@@ -30,7 +30,7 @@ export default function Login() {
   }
 
   return (
-    <main className="flex h-screen flex-col items-center justify-center gap-4">
+    <main className="col-span-2 row-span-2 flex h-screen flex-col items-center justify-center gap-4">
       <Title order={1}>Club 12</Title>
       <form
         className="flex w-full max-w-xs flex-col items-center justify-center gap-5 p-3"

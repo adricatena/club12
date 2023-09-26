@@ -1,3 +1,11 @@
 /* @tailwind base; */
 @tailwind components;
 @tailwind utilities;
+
+#__next {
+  min-width: 100vw;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 11rem auto;
+  grid-template-rows: min-content auto;
+}
