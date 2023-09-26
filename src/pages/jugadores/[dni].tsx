@@ -33,6 +33,7 @@ interface Props {
   playerFromDb: PlayerFromDb | null;
   sportsFromDb: Sport[];
   playerSportsFromDb: PlayerSportFromDb[] | null;
+  photoUrl: string | null;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -47,6 +48,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
         playerFromDb: null,
         sportsFromDb: [] || null,
         playerSportsFromDb: null,
+        photoUrl: null,
       },
     };
   }
@@ -63,6 +65,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
         playerFromDb: null,
         sportsFromDb: [] || null,
         playerSportsFromDb: null,
+        photoUrl : null,
       },
     };
   }
@@ -83,11 +86,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       playerFromDb,
       sportsFromDb,
       playerSportsFromDb,
+      photoUrl,
     },
   };
 };
 
-function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb }: Props) {
+function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }: Props) {
   const { setValues, onSubmit, getInputProps, values } = useForm<Form>({
     initialValues: {
       name: playerFromDb?.name|| "",
@@ -97,7 +101,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb }: Props) {
       email: playerFromDb?.email || "",
       cellphone: playerFromDb?.cellphone || "",
       observations: playerFromDb?.observations || "",
-      photoSrc: "",
+      photoSrc: photoUrl || "",
       activeSports: playerFromDb
         ? (playerSportsFromDb || []).map((sport) => sport.name)
         : [],
@@ -246,12 +250,6 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb }: Props) {
               placeholder="Observaciones..."
               {...getInputProps("observation")}
             />
-            <TextInput
-              label="Foto"
-              placeholder="URL de la foto..."
-              {...getInputProps("photoSrc")}
-            />
-            {/* Añade aquí el bloque de carga de imágenes si es necesario */}
           </section>
           <section className="grid">
             <div className="flex flex-col gap-5">
@@ -280,7 +278,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb }: Props) {
     );
   }
 
-function Player({ playerFromDb, sportsFromDb, playerSportsFromDb }: Props) {
+function Player({ playerFromDb, sportsFromDb, playerSportsFromDb, photoUrl }: Props) {
   if (!playerFromDb) {
     return (
       <Layout>
@@ -309,7 +307,7 @@ function Player({ playerFromDb, sportsFromDb, playerSportsFromDb }: Props) {
       { name: "Editar", href: `/jugadores/${playerFromDb.dni}` },
     ]}
     >
-      <EditPlayer playerFromDb={playerFromDb} sportsFromDb={sportsFromDb} playerSportsFromDb={playerSportsFromDb} />
+      <EditPlayer playerFromDb={playerFromDb} sportsFromDb={sportsFromDb} playerSportsFromDb={playerSportsFromDb} photoUrl={photoUrl}  />
     </Layout>
   );
 }
