@@ -75,7 +75,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     playerFromDb.name,
     playerFromDb.lastname,
   );
-  console.log({ photoUrl });
 
   const playerSportsFromDb = await playerController.getPlayerSports(
     playerFromDb.id,
@@ -110,8 +109,6 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
         : [],
     },
   });
-  console.log(playerSportsFromDb)
-  console.log("activeSports:", values.activeSports);
   
   function handleChangePhoto(file: File | null) {
     if (file) {
@@ -201,7 +198,6 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
       
   }
 
-  console.log("activeSports:", values.activeSports);
     return (
 
         <form
