@@ -3,7 +3,7 @@ import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
 import { SportController } from "@/entities/sport/sport.controller";
 import type { PlayerFromDb } from "@/entities/player/player.types";
-import { Alert, Button, TextInput, NumberInput, Textarea, Switch } from "@mantine/core";
+import { Alert, Button, TextInput, NumberInput, Textarea, Switch} from "@mantine/core";
 import { type GetServerSideProps } from "next";
 import type { Sport } from "@/entities/sport/sport.types";
 import Link from "next/link";
@@ -14,6 +14,8 @@ import InputPhoto from "@/components/input-photo";
 import { Form, useForm } from "@mantine/form";
 import type { Player } from "@/entities/player/player.types";
 import { PlayerSportFromDb } from "@/entities/playerSport.type";
+import { modals } from '@mantine/modals';
+import { ModalsProvider } from '@mantine/modals';
 
 type Form = {
   name: string;
@@ -27,6 +29,7 @@ type Form = {
   observations: string;
   activeSports: string[];
   federatedSports: string[];
+  active: boolean;
 };
 
 interface Props {
@@ -101,6 +104,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
       cellphone: playerFromDb?.cellphone || "",
       observations: playerFromDb?.observations || "",
       photoSrc: photoUrl || "",
+      active: playerFromDb?.active || false,
       activeSports: playerFromDb
         ? (playerSportsFromDb || []).map((sport) => sport.name)
         : [],
@@ -196,12 +200,8 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
       toast.error("Error al editar el jugador", message);
     }  
   }
-  // onClickDisablePlayer{
-    
-  // }
-
     return (
-
+      <ModalsProvider labels={{ confirm: 'Confirmar', cancel: 'Cancelar' }}>
         <form
           className="flex w-full max-w-3xl items-stretch gap-7 self-center p-4"
           onSubmit={onSubmit(handleSubmit)}
@@ -268,8 +268,33 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
               />
               <Switch
                 label={"Activo"}
-                className="pb-1"
-                // onClick={onClickDisablePlayer}
+                checked={values.active}
+                onChange={(checked) => {
+                if (checked && values.active) {
+                // Mostrar el modal solo si el jugador está marcado como activo y el usuario intenta desactivarlo
+                modals.openConfirmModal({
+                title: '¿Desactivar jugador?',
+                children: (
+                  <p>
+                    ¿Está seguro de que desea desactivar al jugador?
+                  </p>
+                ),
+                labels: { confirm: 'Sí', cancel: 'No' },
+                confirmProps: { color: 'red' },
+                onCancel: () => {
+                },
+                onConfirm: () => {
+                setValues({
+                  active: false,
+                  });
+                },
+                });
+                } else {
+                setValues({
+                active: true,
+                });
+              }
+              }}
               />
             </div>
             <Button
@@ -281,6 +306,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
             </Button>
           </section>
         </form>
+    </ModalsProvider>
     );
   }
 

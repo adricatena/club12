@@ -11,6 +11,7 @@ export interface Database {
     Tables: {
       players: {
         Row: {
+          active: boolean
           birthdate: string
           cellphone: string | null
           created_at: string | null
@@ -22,6 +23,7 @@ export interface Database {
           observations: string | null
         }
         Insert: {
+          active?: boolean
           birthdate: string
           cellphone?: string | null
           created_at?: string | null
@@ -33,6 +35,7 @@ export interface Database {
           observations?: string | null
         }
         Update: {
+          active?: boolean
           birthdate?: string
           cellphone?: string | null
           created_at?: string | null
