@@ -8,6 +8,7 @@ export type Player = {
   lastname: string;
   name: string;
   observations?: string;
+  active: boolean;
 };
 
 export type PlayerFromDb = Database["public"]["Tables"]["players"]["Row"];
