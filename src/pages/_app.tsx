@@ -7,6 +7,7 @@ import "@/styles/globals.css";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
+import { ModalsProvider } from "@mantine/modals";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -23,8 +24,10 @@ export default function App({ Component, pageProps }: AppProps) {
         initialSession={pageProps.initialSession}
       >
         <MantineProvider>
-          <Component {...pageProps} />
-          <Notifications />
+          <ModalsProvider labels={{ confirm: 'Confirmar', cancel: 'Cancelar' }}>
+            <Component {...pageProps} />
+            <Notifications />
+          </ModalsProvider>
         </MantineProvider>
       </SessionContextProvider>
     </>

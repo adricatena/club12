@@ -135,17 +135,19 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
   }: MouseEvent<HTMLInputElement>) {
     const { checked, value } = currentTarget;
     if (checked) {
-      if (!values.activeSports.includes(value)) {
         setValues({
           activeSports: [...values.activeSports, value],
         });
-      }
     } else {
       const filteredActiveSports = values.activeSports.filter(
         (sport) => sport !== value
       );
+      const filteredFederatedSports = values.federatedSports.filter(
+        (sport) => sport !== value
+      )
       setValues({
         activeSports: [...filteredActiveSports],
+        federatedSports: [...filteredFederatedSports],
       });
     }
   }
@@ -174,7 +176,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
       if (!(name && lastname && dni && sportsFromDb))
         throw new Error("Es necesario el nombre, apellido y DNI");
   
-      const updatedPlayerData: Player = {
+      const updatedPlayerData={
         name,
         lastname,
         dni: Number(dni),
@@ -183,9 +185,13 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
         cellphone: values.cellphone,
         observations: values.observations,
         active: values.active,
+        activeSports: values.activeSports,
+        federatedSports: values.federatedSports,
+        photo:values.photo,
+        photoSrc:values.photoSrc,
       };
-  
-      // await playerController.updatePlayer(playerFromDb.id, updatedPlayerData);
+      console.log(updatedPlayerData);
+      // await playerController.updatePlayer(playerFromDb.id, updatedPlayerData, playerSportsFromDb);
   
       toast.success(
         "Jugador editado correctamente",
@@ -201,8 +207,8 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
       toast.error("Error al editar el jugador", message);
     }  
   }
+
     return (
-      <ModalsProvider labels={{ confirm: 'Confirmar', cancel: 'Cancelar' }}>
         <form
           className="flex w-full max-w-3xl items-stretch gap-7 self-center p-4"
           onSubmit={onSubmit(handleSubmit)}
@@ -250,7 +256,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
               maxRows={4}
               label="Observación"
               placeholder="Observaciones..."
-              {...getInputProps("observation")}
+              {...getInputProps("observations")}
             />
           </section>
           <section className="grid">
@@ -306,7 +312,6 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
             </Button>
           </section>
         </form>
-    </ModalsProvider>
     );
   }
 
