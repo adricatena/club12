@@ -19,7 +19,7 @@ function SportsSwitches({
 }: Props) {
   return (
     <div className="flex flex-col gap-2">
-      <Switch.Group label="Deportes">
+      <Switch.Group label="Deportes" value={activeSports}>
         {sports?.map((sport) => (
           <Switch
             key={sport.id}
