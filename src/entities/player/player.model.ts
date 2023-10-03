@@ -1,7 +1,11 @@
 import type { Database } from "@/database/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createFileName } from "./player.helper";
-import type { Player, PlayerSport, PlayerSportFromDb } from "./player.types";
+import type {
+  PlayerFromDb,
+  PlayerSport,
+  PlayerSportFromDb,
+} from "./player.types";
 
 export class PlayerModel {
   client: SupabaseClient<Database>;
@@ -50,7 +54,7 @@ export class PlayerModel {
     return filteredSports;
   }
 
-  async createPlayer(playerData: Player, photo?: File) {
+  async createPlayer(playerData: PlayerFromDb, photo?: File) {
     const fileName = createFileName(
       playerData.dni.toString(10),
       playerData.name,
@@ -63,14 +67,31 @@ export class PlayerModel {
     return { id };
   }
 
+  async editPlayer(playerData: PlayerFromDb, photo?: File) {
+    const fileName = createFileName(
+      playerData.dni.toString(10),
+      playerData.name,
+      playerData.lastname,
+    );
+    if (photo) {
+      await this.#updatePhoto(fileName, photo);
+    }
+    const { id } = await this.#updatePlayer(playerData);
+    return { id };
+  }
+
   async createPlayerSport(playerSportsData: PlayerSport[]) {
     const { error } = await this.client
       .from("players_sports")
-      .insert([...playerSportsData]);
+      .insert(playerSportsData);
     if (error) throw new Error(error.message);
   }
 
-  async #insertPlayer(playerData: Player) {
+  async editPlayerSport(playerSportsData: PlayerSport[]) {
+    console.log({ playerSportsData });
+  }
+
+  async #insertPlayer(playerData: PlayerFromDb) {
     const { data, error } = await this.client
       .from("players")
       .insert(playerData)
@@ -85,6 +106,26 @@ export class PlayerModel {
     const { data, error } = await this.client.storage
       .from("players")
       .upload(`public/${fileName}`, photo);
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async #updatePlayer(playerData: PlayerFromDb) {
+    const { data, error } = await this.client
+      .from("players")
+      .update(playerData)
+      .eq("dni", playerData.dni)
+      .select("id")
+      .limit(1)
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async #updatePhoto(fileName: string, photo: File) {
+    const { data, error } = await this.client.storage
+      .from("players")
+      .update(`public/${fileName}`, photo, { upsert: true });
     if (error) throw new Error(error.message);
     return data;
   }

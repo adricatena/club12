@@ -2,21 +2,21 @@ import Layout from "@/components/layout";
 import ULink from "@/components/unstyled-link";
 import { serverClient } from "@/database/clients";
 import { PlayerController } from "@/entities/player/player.controller";
-import type { Player } from "@/entities/player/player.types";
+import type { PlayerFromDb } from "@/entities/player/player.types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
 interface Props {
-  playersFromDb: Player[];
+  playersFromDb: PlayerFromDb[];
 }
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
   const client = serverClient(context);
   const playerController = new PlayerController(client);
-  const playersFromDb = (await playerController.getPlayers()) as Player[];
+  const playersFromDb = (await playerController.getPlayers()) as PlayerFromDb[];
 
   return {
     props: {
@@ -52,7 +52,7 @@ const ORDER_METHODS = {
 export default function Players({ playersFromDb }: Props) {
   const [orderBy, setOrderBy] = useState<ColumnKey>();
   const [orderMethod, setOrderMethod] = useState(OrderMethods.default);
-  const [players, setPlayers] = useState<Player[]>(playersFromDb);
+  const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb);
 
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 

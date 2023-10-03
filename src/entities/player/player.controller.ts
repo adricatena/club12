@@ -3,7 +3,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import type { Sport } from "../sport/sport.types";
 import { createFileName } from "./player.helper";
 import { PlayerModel } from "./player.model";
-import type { Player, PlayerSport } from "./player.types";
+import type { PlayerFromDb, PlayerSport } from "./player.types";
 
 export class PlayerController {
   playerModel: PlayerModel;
@@ -36,7 +36,7 @@ export class PlayerController {
   }
 
   async createPlayer(
-    playerData: Player,
+    playerData: PlayerFromDb,
     sportsFromDb: Sport[],
     photo?: File,
     sports?: string[],
@@ -63,6 +63,41 @@ export class PlayerController {
       });
 
       await this.playerModel.createPlayerSport(playerSports);
+    }
+  }
+
+  async editPlayer(
+    playerData: PlayerFromDb,
+    sportsFromDb: Sport[],
+    photo?: File,
+    sports?: string[],
+    federatedSports?: string[],
+  ) {
+    const alreadyExists = await this.existPlayer(playerData.dni);
+    if (!alreadyExists)
+      throw new Error(`El jugador con DNI ${playerData.dni} no existe!`);
+
+    const { id } = await this.playerModel.editPlayer(playerData, photo);
+    if (sports?.length) {
+      const playerSports = sports.map<PlayerSport>((sport) => {
+        const sport_id =
+          sportsFromDb.find((sportFromDb) => sportFromDb.name === sport)?.id ||
+          "";
+        const federated = Boolean(
+          federatedSports?.find((federatedSport) => federatedSport === sport),
+        );
+        return {
+          player_id: id,
+          sport_id,
+          federated,
+        };
+      });
+
+      await this.playerModel.editPlayerSport(playerSports);
+    } else {
+      // TODO: Si el jugador ya no tiene ningun deporte asignado, no solo debemos sacarlo de la tabla players_sports
+      // sino tambien de la tabla players_teams
+      await this.playerModel.editPlayerSport([]);
     }
   }
 }
