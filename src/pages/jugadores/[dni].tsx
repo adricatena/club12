@@ -182,6 +182,7 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
         email: values.email,
         cellphone: values.cellphone,
         observations: values.observations,
+        active: values.active,
       };
   
       // await playerController.updatePlayer(playerFromDb.id, updatedPlayerData);
@@ -271,12 +272,11 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
                 checked={values.active}
                 onChange={(checked) => {
                 if (checked && values.active) {
-                // Mostrar el modal solo si el jugador está marcado como activo y el usuario intenta desactivarlo
                 modals.openConfirmModal({
-                title: '¿Desactivar jugador?',
+                title: '¿Está seguro de que desea desactivar al jugador?',
                 children: (
                   <p>
-                    ¿Está seguro de que desea desactivar al jugador?
+                    Esta accion lo eliminara de los equipos en los que se encuentra asociado
                   </p>
                 ),
                 labels: { confirm: 'Sí', cancel: 'No' },
