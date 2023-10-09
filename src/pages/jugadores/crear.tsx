@@ -3,56 +3,55 @@ import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
 import toast from "@/components/toast";
 import { client, serverClient } from "@/database/clients";
-import { PlayerController } from "@/entities/player/player.controller";
-import type { Player } from "@/entities/player/player.types";
-import { SportController } from "@/entities/sport/sport.controller";
-import type { Sport } from "@/entities/sport/sport.types";
+import type { NewPlayer } from "@/resources/player/player";
+import { createPlayer } from "@/resources/player/player.util";
+import type { SportFromDb } from "@/resources/sport/sport";
+import { getSports } from "@/resources/sport/sport.util";
 import { Button, Loader, NumberInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
-import { MouseEvent, useState } from "react";
+import { useState, type MouseEvent } from "react";
 
 interface Props {
-  sportsFromDb: Sport[];
+  sportsFromDb: SportFromDb[];
 }
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const client = serverClient(context);
-  const sportController = new SportController(client);
-  const sportsFromDb = await sportController.getSports();
-
-  return {
-    props: {
-      sportsFromDb,
-    },
-  };
+  const { data } = await getSports(serverClient(context));
+  return { props: { sportsFromDb: data ?? [] } };
 };
 
 function CreatePlayer({ sportsFromDb }: Props) {
-  const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
-    initialValues: {
-      name: "",
-      lastname: "",
-      dni: "",
-      birthdate: "",
-      email: "",
-      cellphone: "",
-      photoSrc: "",
-      activeSports: [],
-      federatedSports: [],
-    },
-  });
-
+  const { setValues, reset, onSubmit, getInputProps, values } =
+    useForm<NewPlayer>({
+      initialValues: {
+        name: "",
+        lastname: "",
+        dni: "",
+        birthdate: "",
+        email: "",
+        cellphone: "",
+        photoSrc: "",
+        activeSports: [],
+        federatedSports: [],
+      },
+      validate: {
+        dni: (dni) => (dni.length > 7 ? null : "Ingrese un DNI valido"),
+        cellphone: (cell) =>
+          cell.length > 10 || cell.length === 0
+            ? null
+            : "Ingrese un numero de celular valido",
+      },
+    });
   const [isLoadingForm, setIsLoadingForm] = useState(false);
 
   function handleChangePhoto(file: File | null) {
-    if (file) {
+    if (file)
       setValues({
         photo: file,
         photoSrc: URL.createObjectURL(file),
       });
-    }
   }
 
   function handleClickDeletePhoto() {
@@ -62,10 +61,8 @@ function CreatePlayer({ sportsFromDb }: Props) {
     });
   }
 
-  function handleClickSportSwitch({
-    currentTarget,
-  }: MouseEvent<HTMLInputElement>) {
-    const { checked, value } = currentTarget;
+  function handleClickSportSwitch(event: MouseEvent<HTMLInputElement>) {
+    const { checked, value } = event.currentTarget;
     if (checked) {
       setValues({
         activeSports: [...values.activeSports, value],
@@ -78,16 +75,14 @@ function CreatePlayer({ sportsFromDb }: Props) {
         (sport) => sport !== value,
       );
       setValues({
-        activeSports: [...filteredActiveSports],
-        federatedSports: [...filteredFederatedSports],
+        activeSports: filteredActiveSports,
+        federatedSports: filteredFederatedSports,
       });
     }
   }
 
-  function handleClickFederatedSwitch({
-    currentTarget,
-  }: MouseEvent<HTMLInputElement>) {
-    const { checked, value } = currentTarget;
+  function handleClickFederatedSwitch(event: MouseEvent<HTMLInputElement>) {
+    const { checked, value } = event.currentTarget;
     if (checked) {
       setValues({
         federatedSports: [...values.federatedSports, value],
@@ -102,47 +97,17 @@ function CreatePlayer({ sportsFromDb }: Props) {
     }
   }
 
-  async function handleSubmit(values: Form) {
+  async function handleSubmit(values: NewPlayer) {
     setIsLoadingForm(true);
-    try {
-      const { name, lastname, dni } = values;
-
-      if (!(name && lastname && dni && sportsFromDb))
-        throw new Error("Es necesario el nombre, apellido y dni");
-
-      const newPlayerData: Player = {
-        name,
-        lastname,
-        dni: Number(dni),
-        birthdate: values.birthdate,
-        email: values.email,
-        cellphone: values.cellphone,
-      };
-
-      const playerController = new PlayerController(client);
-      await playerController.createPlayer(
-        newPlayerData,
-        sportsFromDb,
-        values.photo,
-        values.activeSports,
-        values.federatedSports,
-      );
-
+    const { ok, message } = await createPlayer(client, values, sportsFromDb);
+    if (ok) {
       toast.success(
         "Jugador creado correctamente",
-        `El jugador con DNI ${dni} se creo correctamente`,
+        `El jugador con DNI ${values.dni} se creo correctamente`,
       );
       reset();
-    } catch (error) {
-      console.error(error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Ocurrio un error creando el jugador";
-      toast.error("Error creando el jugador", message);
-    } finally {
-      setIsLoadingForm(false);
-    }
+    } else toast.error("Error creando el jugador", message);
+    setIsLoadingForm(false);
   }
 
   return (
@@ -173,8 +138,6 @@ function CreatePlayer({ sportsFromDb }: Props) {
             <NumberInput
               label="DNI"
               placeholder="30123654"
-              minLength={8}
-              maxLength={9}
               hideControls
               required
               {...getInputProps("dni")}
@@ -189,8 +152,6 @@ function CreatePlayer({ sportsFromDb }: Props) {
             <NumberInput
               label="Celular"
               placeholder="3435873290"
-              minLength={8}
-              maxLength={11}
               hideControls
               {...getInputProps("cellphone")}
             />
@@ -231,18 +192,5 @@ function CreatePlayer({ sportsFromDb }: Props) {
     </Layout>
   );
 }
-
-type Form = {
-  name: string;
-  lastname: string;
-  dni: string;
-  birthdate: string;
-  email: string;
-  cellphone: string;
-  photoSrc: string;
-  photo?: File;
-  activeSports: string[];
-  federatedSports: string[];
-};
 
 export default CreatePlayer;

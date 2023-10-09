@@ -1,23 +1,20 @@
 import Layout from "@/components/layout";
 import ULink from "@/components/unstyled-link";
 import { serverClient } from "@/database/clients";
-import { PlayerController } from "@/entities/player/player.controller";
-import type { PlayerFromDb } from "@/entities/player/player.types";
+import { PlayerFromDb } from "@/resources/player/player";
+import { getPlayers } from "@/resources/player/player.util";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
 
 interface Props {
-  playersFromDb: PlayerFromDb[];
+  playersFromDb: PlayerFromDb[] | null;
 }
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const client = serverClient(context);
-  const playerController = new PlayerController(client);
-  const playersFromDb = (await playerController.getPlayers()) as PlayerFromDb[];
-
+  const { data: playersFromDb } = await getPlayers(serverClient(context));
   return {
     props: {
       playersFromDb,
@@ -52,7 +49,7 @@ const ORDER_METHODS = {
 export default function Players({ playersFromDb }: Props) {
   const [orderBy, setOrderBy] = useState<ColumnKey>();
   const [orderMethod, setOrderMethod] = useState(OrderMethods.default);
-  const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb);
+  const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb ?? []);
 
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 
@@ -85,7 +82,7 @@ export default function Players({ playersFromDb }: Props) {
     event.preventDefault();
     const searchedInput = searchPlayerRef.current?.value;
     if (!searchedInput) {
-      setPlayers(playersFromDb);
+      setPlayers(playersFromDb ?? []);
       return;
     }
     const filterPlayers = players.filter((player) =>

@@ -1,13 +1,13 @@
 import { client } from "@/database/clients";
-import { MantineProvider } from "@mantine/core";
-import "@mantine/core/styles.css";
-import { Notifications } from "@mantine/notifications";
-import "@mantine/notifications/styles.css";
 import "@/styles/globals.css";
+import { MantineProvider } from "@mantine/core";
+import "@mantine/core/styles.layer.css";
+import { ModalsProvider } from "@mantine/modals";
+import { Notifications } from "@mantine/notifications";
+import "@mantine/notifications/styles.layer.css";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { ModalsProvider } from "@mantine/modals";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
