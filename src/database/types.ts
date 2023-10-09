@@ -11,6 +11,7 @@ export interface Database {
     Tables: {
       players: {
         Row: {
+          playerSportsFromDb: any
           active: boolean
           birthdate: string
           cellphone: string | null

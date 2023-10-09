@@ -12,10 +12,8 @@ import { MouseEvent, useState } from "react";
 import SportsSwitches from "@/components/sports-switches";
 import InputPhoto from "@/components/input-photo";
 import { Form, useForm } from "@mantine/form";
-import type { Player } from "@/entities/player/player.types";
 import { PlayerSportFromDb } from "@/entities/playerSport.type";
 import { modals } from '@mantine/modals';
-import { ModalsProvider } from '@mantine/modals';
 
 type Form = {
   name: string;
@@ -213,52 +211,54 @@ function EditPlayer({ playerFromDb, sportsFromDb, playerSportsFromDb,photoUrl }:
           className="flex w-full max-w-3xl items-stretch gap-7 self-center p-4"
           onSubmit={onSubmit(handleSubmit)}
         >
-          <section className="flex w-full flex-col gap-5">
-            <TextInput
-              label="Nombre"
-              placeholder="Juan"
-              required
-              {...getInputProps("name")}
-            />
-            <TextInput
-              label="Apellido"
-              placeholder="Perez"
-              required
-              {...getInputProps("lastname")}
-            />
-            <NumberInput
-              label="DNI"
-              placeholder="30123654"
-              minLength={8}
-              maxLength={9}
-              hideControls
-              required
-              {...getInputProps("dni")}
-            />
-            <TextInput
-              type="date"
-              label="Nacimiento"
-              placeholder="15/07/1995"
-              required
-              {...getInputProps("birthdate")}
-            />
-            <NumberInput
-              label="Celular"
-              placeholder="3435873290"
-              minLength={8}
-              maxLength={11}
-              hideControls
-              {...getInputProps("cellphone")}
-            />
-            <Textarea
-              autosize
-              minRows={2}
-              maxRows={4}
-              label="Observación"
-              placeholder="Observaciones..."
-              {...getInputProps("observations")}
-            />
-          </section>
+        <section className="flex w-full flex-col gap-5">
+          <label htmlFor="name">Nombre</label>
+          <TextInput
+            id="name"
+            placeholder="Juan"
+            required
+            {...getInputProps("name")}
+          />
+          <label htmlFor="lastname">Apellido</label>
+          <TextInput
+            id="lastname"
+            placeholder="Perez"
+            required
+            {...getInputProps("lastname")}
+          />
+          <label htmlFor="dni">DNI</label>
+          <NumberInput
+            placeholder="30123654"
+            minLength={8}
+            maxLength={9}
+            hideControls
+            required
+            {...getInputProps("dni")}
+          />
+          <label htmlFor="birthdate">Nacimiento</label>
+          <TextInput
+            type="date"
+            placeholder="15/07/1995"
+            required
+            {...getInputProps("birthdate")}
+          />
+          <label htmlFor="email">Email</label>
+          <NumberInput
+            placeholder="3435873290"
+            minLength={8}
+            maxLength={11}
+            hideControls
+            {...getInputProps("cellphone")}
+          />
+          <label htmlFor="observations">Observaciones</label>
+          <Textarea
+            autosize
+            minRows={2}
+            maxRows={4}
+            placeholder="Observaciones..."
+            {...getInputProps("observations")}
+          />
+        </section>
           <section className="grid">
             <div className="flex flex-col gap-5">
               <InputPhoto

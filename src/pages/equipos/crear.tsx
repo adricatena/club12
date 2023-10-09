@@ -1,0 +1,311 @@
+import InputPhoto from "@/components/input-photo";
+import Layout from "@/components/layout";
+import toast from "@/components/toast";
+import { client, serverClient } from "@/database/clients";
+import type { PlayerFromDb, PlayerSportFromDb } from "@/entities/player/player.types";
+import { PlayerController } from "@/entities/player/player.controller";
+import { SportController } from "@/entities/sport/sport.controller";
+import type { Sport } from "@/entities/sport/sport.types";
+import { Button, Loader, NumberInput, TextInput, Paper, Input, Text, Textarea, Radio, RadioGroup, Checkbox } from "@mantine/core";
+import { useForm } from "@mantine/form";
+import type { GetServerSideProps } from "next";
+import { MouseEvent, useState } from "react";
+
+
+interface Props {
+  sportsFromDb: Sport[];
+  playerFromDb: PlayerFromDb[];
+  playerSportsFromDb: PlayerSportFromDb[];
+  sports: Sport[];
+  teamSports: string[];
+  onClickSport: (event: MouseEvent<HTMLInputElement>) => void;
+}
+
+type Form = {
+  photoSrc: string;
+  photo?: File;
+  teamSports: string[];
+  teamName: string;
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async (
+  context,
+) => {
+  const client = serverClient(context);
+  const playerController = new PlayerController(serverClient(context));
+  const sportController = new SportController(client);
+  const sportsFromDb = await sportController.getSports();
+  const playerFromDb = (await playerController.getPlayers()) as PlayerFromDb[];
+  
+  for (const player of playerFromDb) {
+    player.playerSportsFromDb = await playerController.getPlayerSports(player.id);
+  }
+
+  return {
+    props: {
+      sportsFromDb,
+      playerFromDb,
+    },
+  };
+};
+
+function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
+  const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
+    initialValues: {
+      teamName: "",
+      photoSrc: "",
+      teamSports: [],
+    },
+  });
+
+  const [isLoadingForm, setIsLoadingForm] = useState(false);
+
+  function handleChangePhoto(file: File | null) {
+    if (file) {
+      setValues({
+        photo: file,
+        photoSrc: URL.createObjectURL(file),
+      });
+    }
+  }
+
+  function handleClickDeletePhoto() {
+    setValues({
+      photoSrc: "",
+      photo: undefined,
+    });
+  }
+
+const [selectedTeamSports, setSelectedTeamSports] = useState<string[]>([]);
+
+function handleClickSportRadius({
+  currentTarget,
+}: MouseEvent<HTMLInputElement>) {
+  const { checked, value } = currentTarget;
+  const sportName = sportsFromDb.find((sport) => sport.id === value)?.name;
+
+  if (checked && sportName) {
+    // Filtrar los jugadores que tienen el deporte seleccionado activo
+    const filteredPlayers = playerFromDb.filter((player) =>
+      player.playerSportsFromDb.some((sport: { name: string; }) => sport.name === sportName)
+    );
+
+    setPlayers(filteredPlayers);
+    setSelectedTeamSports([sportName]);
+    setValues({
+      ...values,
+      teamSports: [sportName],
+    });
+  }
+}
+
+  
+
+
+
+  //   async function handleSubmit(values: Form) {
+  //     setIsLoadingForm(true);
+  //     try {
+  //       const { teamName } = values;
+
+  //       if (!teamName)
+  //         throw new Error("Es necesario el nombre del equipo");
+
+  //       const newTeamData: Team = {
+  //         name: teamName,
+  //       }");
+
+  //       const teamController = new teamController(client);
+  //       await teamController.createTeam(
+  //         newTeamData,
+  //         sportsFromDb,
+  //         values.photo,
+  //       );
+
+  //       toast.success(
+  //         "Equipo creado correctamente",
+  //         `El equipo ${teamName} se creo correctamente`,
+  //       );
+  //       reset();
+  //     } catch (error) {
+  //       console.error(error);
+  //       const message =
+  //         error instanceof Error
+  //           ? error.message
+  //           : "Ocurrio un error creando el jugador";
+  //       toast.error("Error creando el jugador", message);
+  //     } finally {
+  //       setIsLoadingForm(false);
+  //     }
+  //   }
+  const [players, setPlayers] = useState(playerFromDb.filter((player) => player.active));
+  const [team, setTeam] = useState([] as PlayerFromDb[]);
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
+  const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState([]);
+
+  const handleAddToTeam = () => {
+    const playersToAdd = playerFromDb.filter((player) =>
+      selectedPlayerIds.includes(player.id)
+    );
+    setTeam([...team, ...playersToAdd]);
+    setPlayers(players.filter((player) => !selectedPlayerIds.includes(player.id)));
+    setSelectedPlayerIds([]);
+  };
+
+  const handleRemoveFromTeam = () => {
+    setTeam(team.filter((player) => !selectedPlayerIds.includes(player.id)));
+    setPlayers([...players, ...selectedPlayerIds.map((id) => playerFromDb.find((player) => player.id === id)).filter(Boolean)]);
+    setSelectedPlayerIds([]);
+  };
+
+  const handleClickAddToTeam = (playerId: string) => {
+    if (selectedPlayerIds.includes(playerId)) {
+      setSelectedPlayerIds(selectedPlayerIds.filter((id) => id !== playerId));
+    } else {
+      setSelectedPlayerIds([...selectedPlayerIds, playerId]);
+    }
+  };
+
+
+  return (
+    <Layout
+      breadcrumbs={[
+        { name: "Equipos", href: "/equipos" },
+        { name: "Crear", href: "/equipos/crear" },
+      ]}
+    >
+      {sportsFromDb ? (
+        <form
+          className="flex w-full max-w-3xl items-stretch gap-7 self-center p-4"
+        //   onSubmit={onSubmit(handleSubmit)}
+        >
+          <section className="flex w-full flex-col gap-5">
+            <TextInput
+              label="Nombre del Equipo"
+              placeholder="Boston Celtics"
+              required
+              {...getInputProps("teamName")}
+            />
+            <div className="flex justify-center items-center space-x-4">
+              <Paper
+                shadow="xs"
+                p="xs"
+                style={{
+                  maxWidth: "300px",
+                  maxHeight: "500px",
+                  minHeight: "500px",
+                  minWidth: "200px",
+                }}
+              >
+                <h2 className="text-lg font-semibold mb-4">Jugadores</h2>
+                <Input
+                  placeholder="Buscar jugador"
+                  rightSection={<i className="fas fa-search"></i>}
+                />
+                <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                  <ul>
+                    {players.map((player) => (
+                      <div key={player.id} className="mb-1">
+                        <label className="inline-block cursor-pointer">
+                          <Checkbox
+                            label={`${player.lastname}, ${player.name}`}
+                            checked={selectedPlayerIds.includes(player.id)}
+                            onChange={() => handleClickAddToTeam(player.id)}
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </ul>
+                </div>
+              </Paper>
+              <div className="flex flex-col items-center justify-center space-y-2">
+                <Button
+                  onClick={handleAddToTeam}
+                  variant="primary"
+                  className="w-auto"
+                  disabled={selectedPlayerIds.length === 0}
+                >
+                  Agregar
+                </Button>
+                <Button
+                  onClick={handleRemoveFromTeam}
+                  variant="danger"
+                  className="w-auto"
+                  disabled={selectedPlayersInTeam.length !== 0}
+                >
+                  Quitar
+                </Button>
+              </div>
+              <Paper
+                shadow="xs"
+                p="xs"
+                style={{
+                  maxWidth: "300px",
+                  maxHeight: "500px",
+                  minHeight: "500px",
+                  minWidth: "200px",
+                }}
+              >
+                <h2 className="text-lg font-semibold mb-4">Equipo</h2>
+                <Input
+                  placeholder="Buscar jugador"
+                  rightSection={<i className="fas fa-search"></i>}
+                />
+                <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                  <ul>
+                    {team.map((player) => (
+                      <div key={player.id} className="mb-1">
+                        <label className="inline-block cursor-pointer">
+                          <Checkbox
+                            label={`${player.lastname}, ${player.name}`}
+                            checked={selectedPlayerIds.includes(player.id)}
+                            onChange={() => handleClickAddToTeam(player.id)}
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </ul>
+                </div>
+              </Paper>
+            </div>
+          </section>
+          <section className="grid">
+            <div className="flex flex-col gap-5">
+              <InputPhoto
+                photoSrc={values.photoSrc}
+                onClickFileButton={handleChangePhoto}
+                onClickDeleteButton={handleClickDeletePhoto}
+              />
+              {sportsFromDb ? (
+                <RadioGroup label="Deportes">
+                  {sportsFromDb.map((sport) => (
+                    <Radio
+                      label={sport.name}
+                      key={sport.id}
+                      value={sport.id}
+                      onClick={handleClickSportRadius}
+                    />
+                  ))}
+                </RadioGroup>
+              ) : (
+                <Loader />
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoadingForm}
+              className="place-self-end"
+            >
+              Crear jugador
+            </Button>
+          </section>
+        </form>
+      ) : (
+        <Loader />
+      )}
+    </Layout>
+  );
+}
+
+
+export default CreateTeam;
