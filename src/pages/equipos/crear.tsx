@@ -2,11 +2,12 @@ import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import toast from "@/components/toast";
 import { client, serverClient } from "@/database/clients";
+// import { browserclient, getServerClient } from "@/database/clients";
 import type { PlayerFromDb, PlayerSportFromDb } from "@/entities/player/player.types";
 import { PlayerController } from "@/entities/player/player.controller";
 import { SportController } from "@/entities/sport/sport.controller";
 import type { Sport } from "@/entities/sport/sport.types";
-import { Button, Loader, NumberInput, TextInput, Paper, Input, Text, Textarea, Radio, RadioGroup, Checkbox } from "@mantine/core";
+import { Table, Button, Loader, TextInput, Paper, Input, Radio, RadioGroup, Checkbox } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
 import { MouseEvent, useState } from "react";
@@ -36,7 +37,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const sportController = new SportController(client);
   const sportsFromDb = await sportController.getSports();
   const playerFromDb = (await playerController.getPlayers()) as PlayerFromDb[];
-  
+
   for (const player of playerFromDb) {
     player.playerSportsFromDb = await playerController.getPlayerSports(player.id);
   }
@@ -76,30 +77,30 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
     });
   }
 
-const [selectedTeamSports, setSelectedTeamSports] = useState<string[]>([]);
+  const [selectedTeamSports, setSelectedTeamSports] = useState<string[]>([]);
 
-function handleClickSportRadius({
-  currentTarget,
-}: MouseEvent<HTMLInputElement>) {
-  const { checked, value } = currentTarget;
-  const sportName = sportsFromDb.find((sport) => sport.id === value)?.name;
+  function handleClickSportRadius({
+    currentTarget,
+  }: MouseEvent<HTMLInputElement>) {
+    const { checked, value } = currentTarget;
+    const sportName = sportsFromDb.find((sport) => sport.id === value)?.name;
 
-  if (checked && sportName) {
-    // Filtrar los jugadores que tienen el deporte seleccionado activo
-    const filteredPlayers = playerFromDb.filter((player) =>
-      player.playerSportsFromDb.some((sport: { name: string; }) => sport.name === sportName)
-    );
+    if (checked && sportName) {
+      // Filtrar los jugadores que tienen el deporte seleccionado activo
+      const filteredPlayers = playerFromDb.filter((player) =>
+        player.playerSportsFromDb.some((sport: { name: string; }) => sport.name === sportName)
+      );
 
-    setPlayers(filteredPlayers);
-    setSelectedTeamSports([sportName]);
-    setValues({
-      ...values,
-      teamSports: [sportName],
-    });
+      setPlayers(filteredPlayers);
+      setSelectedTeamSports([sportName]);
+      setValues({
+        ...values,
+        teamSports: [sportName],
+      });
+    }
   }
-}
 
-  
+
 
 
 
@@ -140,31 +141,53 @@ function handleClickSportRadius({
   //   }
   const [players, setPlayers] = useState(playerFromDb.filter((player) => player.active));
   const [team, setTeam] = useState([] as PlayerFromDb[]);
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
-  const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState([]);
+  const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState<string[]>([]);
 
   const handleAddToTeam = () => {
-    const playersToAdd = playerFromDb.filter((player) =>
-      selectedPlayerIds.includes(player.id)
+    const playersToAdd = players.filter((player) =>
+      selectedPlayers.includes(player.id)
     );
     setTeam([...team, ...playersToAdd]);
-    setPlayers(players.filter((player) => !selectedPlayerIds.includes(player.id)));
-    setSelectedPlayerIds([]);
+    setPlayers(players.filter((player) => !selectedPlayers.includes(player.id)));
+    setSelectedPlayers([]);
+    setSelectedPlayersInTeam([...selectedPlayersInTeam, ...playersToAdd.map((player) => player.id)]);
   };
 
-  const handleRemoveFromTeam = () => {
-    setTeam(team.filter((player) => !selectedPlayerIds.includes(player.id)));
-    setPlayers([...players, ...selectedPlayerIds.map((id) => playerFromDb.find((player) => player.id === id)).filter(Boolean)]);
-    setSelectedPlayerIds([]);
+    const handleRemoveFromTeam = () => {
+    const playersToRemove = team.filter((player) =>
+      selectedPlayers.includes(player.id)
+    );
+
+    setTeam(team.filter((player) => !selectedPlayers.includes(player.id)));
+    setPlayers([...players, ...playersToRemove]);
+    setSelectedPlayers([]);
   };
+
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
   const handleClickAddToTeam = (playerId: string) => {
-    if (selectedPlayerIds.includes(playerId)) {
-      setSelectedPlayerIds(selectedPlayerIds.filter((id) => id !== playerId));
+    if (selectedPlayers.includes(playerId)) {
+      setSelectedPlayers(selectedPlayers.filter((id) => id !== playerId));
     } else {
-      setSelectedPlayerIds([...selectedPlayerIds, playerId]);
+      setSelectedPlayers([...selectedPlayers, playerId]);
     }
   };
+
+  const [searchPlayers, setSearchPlayers] = useState<string>("");
+  const [searchTeam, setSearchTeam] = useState<string>("");
+
+  const filteredPlayers = players.filter((player) =>
+    player.name.toLowerCase().includes(searchPlayers.toLowerCase()) ||
+    player.lastname.toLowerCase().includes(searchPlayers.toLowerCase())||
+    player.dni.toString().toLowerCase().includes(searchPlayers.toLowerCase()) &&
+    player.active
+  );
+
+  const filteredTeam = team.filter((player) =>
+    player.name.toLowerCase().includes(searchTeam.toLowerCase()) ||
+    player.lastname.toLowerCase().includes(searchTeam.toLowerCase())||
+    player.dni.toString().toLowerCase().includes(searchTeam.toLowerCase())
+  );
 
 
   return (
@@ -176,7 +199,7 @@ function handleClickSportRadius({
     >
       {sportsFromDb ? (
         <form
-          className="flex w-full max-w-3xl items-stretch gap-7 self-center p-4"
+          className="flex w-full items-stretch gap-7 self-center p-4"
         //   onSubmit={onSubmit(handleSubmit)}
         >
           <section className="flex w-full flex-col gap-5">
@@ -193,7 +216,7 @@ function handleClickSportRadius({
                 style={{
                   maxWidth: "300px",
                   maxHeight: "500px",
-                  minHeight: "500px",
+                  minHeight: "400px",
                   minWidth: "200px",
                 }}
               >
@@ -201,21 +224,32 @@ function handleClickSportRadius({
                 <Input
                   placeholder="Buscar jugador"
                   rightSection={<i className="fas fa-search"></i>}
+                  value={searchPlayers}
+                  onChange={(event) => setSearchPlayers(event.currentTarget.value)}
                 />
                 <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                  <ul>
-                    {players.map((player) => (
-                      <div key={player.id} className="mb-1">
-                        <label className="inline-block cursor-pointer">
-                          <Checkbox
-                            label={`${player.lastname}, ${player.name}`}
-                            checked={selectedPlayerIds.includes(player.id)}
-                            onChange={() => handleClickAddToTeam(player.id)}
-                          />
-                        </label>
-                      </div>
-                    ))}
-                  </ul>
+                  <Table>
+                    <Table.Tbody>
+                      <Table.Th></Table.Th>
+                      <Table.Th>Apellido</Table.Th>
+                      <Table.Th>Nombre</Table.Th>
+                      <Table.Th>DNI</Table.Th>
+                      {filteredPlayers.map((player) => (
+                        <Table.Tr key={player.id}>
+                          <Table.Td>
+                            <Checkbox
+                              checked={selectedPlayers.includes(player.id)}
+                              onChange={() => handleClickAddToTeam(player.id)}
+                            />
+                          </Table.Td>
+                          {/* <Table.Td>{`${player.lastname}, ${player.name} - DNI:${player.dni}`}</Table.Td> */}
+                          <Table.Td>{`${player.lastname}`}</Table.Td>
+                          <Table.Td>{`${player.name}`}</Table.Td>
+                          <Table.Td>{`${player.dni}`}</Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
                 </div>
               </Paper>
               <div className="flex flex-col items-center justify-center space-y-2">
@@ -223,7 +257,6 @@ function handleClickSportRadius({
                   onClick={handleAddToTeam}
                   variant="primary"
                   className="w-auto"
-                  disabled={selectedPlayerIds.length === 0}
                 >
                   Agregar
                 </Button>
@@ -231,7 +264,6 @@ function handleClickSportRadius({
                   onClick={handleRemoveFromTeam}
                   variant="danger"
                   className="w-auto"
-                  disabled={selectedPlayersInTeam.length !== 0}
                 >
                   Quitar
                 </Button>
@@ -242,29 +274,42 @@ function handleClickSportRadius({
                 style={{
                   maxWidth: "300px",
                   maxHeight: "500px",
-                  minHeight: "500px",
+                  minHeight: "400px",
                   minWidth: "200px",
                 }}
               >
                 <h2 className="text-lg font-semibold mb-4">Equipo</h2>
+
                 <Input
                   placeholder="Buscar jugador"
                   rightSection={<i className="fas fa-search"></i>}
+                  value={searchTeam}
+                  onChange={(event) => setSearchTeam(event.currentTarget.value)}
                 />
                 <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                  <ul>
-                    {team.map((player) => (
-                      <div key={player.id} className="mb-1">
-                        <label className="inline-block cursor-pointer">
-                          <Checkbox
-                            label={`${player.lastname}, ${player.name}`}
-                            checked={selectedPlayerIds.includes(player.id)}
-                            onChange={() => handleClickAddToTeam(player.id)}
-                          />
-                        </label>
-                      </div>
-                    ))}
-                  </ul>
+                  <Table>
+                    <Table.Tbody>
+                    <Table.Th></Table.Th>
+                      <Table.Th>Apellido</Table.Th>
+                      <Table.Th>Nombre</Table.Th>
+                      <Table.Th>DNI</Table.Th>
+                      {filteredTeam.map((player) => (
+                        <Table.Tr key={player.id}>
+                          <Table.Td>
+                            <Checkbox
+                              checked={selectedPlayers.includes(player.id)}
+                              onChange={() => handleClickAddToTeam(player.id)}
+                            />
+                          </Table.Td>
+                          {/* <Table.Td>{`${player.lastname}, ${player.name} - DNI:${player.dni}`}</Table.Td> */}
+                          <Table.Td>{`${player.lastname}`}</Table.Td>
+                          <Table.Td>{`${player.name}`}</Table.Td>
+                          <Table.Td>{`${player.dni}`}</Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+
                 </div>
               </Paper>
             </div>
