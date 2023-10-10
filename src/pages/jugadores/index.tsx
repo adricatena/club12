@@ -1,8 +1,8 @@
 import Layout from "@/components/layout";
 import ULink from "@/components/unstyled-link";
 import { serverClient } from "@/database/clients";
-import { PlayerFromDb } from "@/resources/player/player";
-import { getPlayers } from "@/resources/player/player.util";
+import PlayerService from "@/resources/player/service";
+import { PlayerFromDb } from "@/resources/player/types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
@@ -14,7 +14,9 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const { data: playersFromDb } = await getPlayers(serverClient(context));
+  const { data: playersFromDb } = await PlayerService.getPlayers(
+    serverClient(context),
+  );
   return {
     props: {
       playersFromDb,

@@ -3,10 +3,10 @@ import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
 import toast from "@/components/toast";
 import { client, serverClient } from "@/database/clients";
-import type { NewPlayer } from "@/resources/player/player";
-import { createPlayer } from "@/resources/player/player.util";
-import type { SportFromDb } from "@/resources/sport/sport";
-import { getSports } from "@/resources/sport/sport.util";
+import PlayerService from "@/resources/player/service";
+import type { NewPlayer } from "@/resources/player/types";
+import SportService from "@/resources/sport/service";
+import type { SportFromDb } from "@/resources/sport/types";
 import { Button, Loader, NumberInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
@@ -18,7 +18,7 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const { data } = await getSports(serverClient(context));
+  const { data } = await SportService.getSports(serverClient(context));
   return { props: { sportsFromDb: data ?? [] } };
 };
 
@@ -99,7 +99,11 @@ function CreatePlayer({ sportsFromDb }: Props) {
 
   async function handleSubmit(values: NewPlayer) {
     setIsLoadingForm(true);
-    const { ok, message } = await createPlayer(client, values, sportsFromDb);
+    const { ok, message } = await PlayerService.createPlayer(
+      client,
+      values,
+      sportsFromDb,
+    );
     if (ok) {
       toast.success(
         "Jugador creado correctamente",

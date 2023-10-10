@@ -2,19 +2,14 @@ import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
 import { client, serverClient } from "@/database/clients";
+import PlayerService from "@/resources/player/service";
 import type {
   PlayerFromDb,
   PlayerSportFromDb,
   UpdatePlayer,
-} from "@/resources/player/player";
-import {
-  getPlayer,
-  getPlayerPhotoUrl,
-  getPlayerSports,
-  updatePlayer,
-} from "@/resources/player/player.util";
-import type { SportFromDb } from "@/resources/sport/sport";
-import { getSports } from "@/resources/sport/sport.util";
+} from "@/resources/player/types";
+import SportService from "@/resources/sport/service";
+import type { SportFromDb } from "@/resources/sport/types";
 import {
   Alert,
   Button,
@@ -48,15 +43,23 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   if (!dni || typeof dni !== "string") return { props: emptyReturn };
 
   const client = serverClient(context);
-  const { data: playerFromDb } = await getPlayer(client, dni);
+  const { data: playerFromDb } = await PlayerService.getPlayer(client, dni);
   if (!playerFromDb) return { props: emptyReturn };
 
-  const { data: sportsFromDb } = await getSports(client);
+  const { data: sportsFromDb } = await SportService.getSports(client);
   if (!sportsFromDb) return { props: emptyReturn };
 
   const { id, name, lastname } = playerFromDb;
-  const { data: photoUrl } = getPlayerPhotoUrl(client, dni, name, lastname);
-  const { data: playerSportsFromDb } = await getPlayerSports(client, id);
+  const { data: photoUrl } = PlayerService.getPlayerPhotoUrl(
+    client,
+    dni,
+    name,
+    lastname,
+  );
+  const { data: playerSportsFromDb } = await PlayerService.getPlayerSports(
+    client,
+    id,
+  );
 
   return {
     props: {
@@ -142,7 +145,7 @@ function EditPlayer(props: Props) {
     }
   }
   async function handleSubmit(values: UpdatePlayer) {
-    await updatePlayer(client, values);
+    await PlayerService.updatePlayer(client, values);
     console.log({ values });
   }
 
