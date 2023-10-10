@@ -1,7 +1,7 @@
 import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
-import { client, serverClient } from "@/database/clients";
+import { browserClient, getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import type {
   PlayerFromDb,
@@ -39,25 +39,28 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     playerSportsFromDb: [],
     photoUrl: null,
   };
-  const { dni } = context.query;
-  if (!dni || typeof dni !== "string") return { props: emptyReturn };
+  const dni = Number(context.query.dni);
+  if (!dni) return { props: emptyReturn };
 
-  const client = serverClient(context);
-  const { data: playerFromDb } = await PlayerService.getPlayer(client, dni);
+  const serverClient = getServerClient(context);
+  const { data: playerFromDb } = await PlayerService.getPlayer(
+    serverClient,
+    dni,
+  );
   if (!playerFromDb) return { props: emptyReturn };
 
-  const { data: sportsFromDb } = await SportService.getSports(client);
+  const { data: sportsFromDb } = await SportService.getSports(serverClient);
   if (!sportsFromDb) return { props: emptyReturn };
 
   const { id, name, lastname } = playerFromDb;
   const { data: photoUrl } = PlayerService.getPlayerPhotoUrl(
-    client,
+    serverClient,
     dni,
     name,
     lastname,
   );
   const { data: playerSportsFromDb } = await PlayerService.getPlayerSports(
-    client,
+    serverClient,
     id,
   );
 
@@ -145,7 +148,7 @@ function EditPlayer(props: Props) {
     }
   }
   async function handleSubmit(values: UpdatePlayer) {
-    await PlayerService.updatePlayer(client, values);
+    await PlayerService.updatePlayer(browserClient, values);
     console.log({ values });
   }
 

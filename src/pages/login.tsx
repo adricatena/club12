@@ -1,5 +1,5 @@
 import toast from "@/components/toast";
-import { client } from "@/database/clients";
+import { browserClient } from "@/database/clients";
 import { Button, PasswordInput, TextInput, Title } from "@mantine/core";
 import { useRouter } from "next/router";
 import { FormEvent, useRef, useState } from "react";
@@ -21,7 +21,7 @@ export default function Login() {
       return;
     }
     try {
-      await client.auth.signInWithPassword({
+      await browserClient.auth.signInWithPassword({
         email,
         password,
       });

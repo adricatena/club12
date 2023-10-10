@@ -1,4 +1,4 @@
-import { client } from "@/database/clients";
+import { browserClient } from "@/database/clients";
 import { Button } from "@mantine/core";
 import { IconDoorExit } from "@tabler/icons-react";
 import { useRouter } from "next/router";
@@ -7,7 +7,7 @@ function LogoutButton() {
   const router = useRouter();
 
   async function handleClick() {
-    await client.auth.signOut();
+    await browserClient.auth.signOut();
     router.push("/login");
   }
 

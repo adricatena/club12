@@ -2,7 +2,7 @@ import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
 import toast from "@/components/toast";
-import { client, serverClient } from "@/database/clients";
+import { browserClient, getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import type { NewPlayer } from "@/resources/player/types";
 import SportService from "@/resources/sport/service";
@@ -18,7 +18,7 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const { data } = await SportService.getSports(serverClient(context));
+  const { data } = await SportService.getSports(getServerClient(context));
   return { props: { sportsFromDb: data ?? [] } };
 };
 
@@ -100,7 +100,7 @@ function CreatePlayer({ sportsFromDb }: Props) {
   async function handleSubmit(values: NewPlayer) {
     setIsLoadingForm(true);
     const { ok, message } = await PlayerService.createPlayer(
-      client,
+      browserClient,
       values,
       sportsFromDb,
     );

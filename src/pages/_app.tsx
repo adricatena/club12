@@ -1,4 +1,4 @@
-import { client } from "@/database/clients";
+import { browserClient } from "@/database/clients";
 import "@/styles/globals.css";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.layer.css";
@@ -20,11 +20,11 @@ export default function App({ Component, pageProps }: AppProps) {
         />
       </Head>
       <SessionContextProvider
-        supabaseClient={client}
+        supabaseClient={browserClient}
         initialSession={pageProps.initialSession}
       >
         <MantineProvider>
-          <ModalsProvider labels={{ confirm: 'Confirmar', cancel: 'Cancelar' }}>
+          <ModalsProvider labels={{ confirm: "Confirmar", cancel: "Cancelar" }}>
             <Component {...pageProps} />
             <Notifications />
           </ModalsProvider>

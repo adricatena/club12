@@ -5,8 +5,8 @@ import {
 import { type GetServerSidePropsContext } from "next";
 import { type Database } from "./types";
 
-export const client = createPagesBrowserClient<Database>();
+export const browserClient = createPagesBrowserClient<Database>();
 
-export function serverClient(context: GetServerSidePropsContext) {
+export function getServerClient(context: GetServerSidePropsContext) {
   return createPagesServerClient<Database>(context);
 }

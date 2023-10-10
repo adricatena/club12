@@ -13,7 +13,7 @@ import type {
 const PlayerService = {
   async getPlayer(
     client: SupabaseClient<Database>,
-    dni: string,
+    dni: string | number,
   ): Promise<Return & { data: PlayerFromDb | null }> {
     const { data, error } = await client
       .from("players")
@@ -33,7 +33,7 @@ const PlayerService = {
   },
   getPlayerPhotoUrl(
     client: SupabaseClient<Database>,
-    dni: string,
+    dni: string | number,
     name: string,
     lastname: string,
   ) {

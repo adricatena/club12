@@ -1,6 +1,6 @@
 import Layout from "@/components/layout";
 import ULink from "@/components/unstyled-link";
-import { serverClient } from "@/database/clients";
+import { getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import { PlayerFromDb } from "@/resources/player/types";
 import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
@@ -15,7 +15,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
   const { data: playersFromDb } = await PlayerService.getPlayers(
-    serverClient(context),
+    getServerClient(context),
   );
   return {
     props: {
