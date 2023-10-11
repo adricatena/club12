@@ -25,3 +25,6 @@ export type PlayerSportFromDb = {
   name: string;
   id: string;
 };
+
+type tmpPlayerSport = Database["public"]["Tables"]["players_sports"]["Row"];
+export type PlayerSport = Omit<tmpPlayerSport, tmpPlayerSport["created_at"]>;

@@ -1,6 +1,7 @@
 import InputPhoto from "@/components/input-photo";
 import Layout from "@/components/layout";
 import SportsSwitches from "@/components/sports-switches";
+import toast from "@/components/toast";
 import { browserClient, getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import type {
@@ -22,7 +23,7 @@ import { useForm } from "@mantine/form";
 import { modals } from "@mantine/modals";
 import { type GetServerSideProps } from "next";
 import Link from "next/link";
-import { type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 
 interface Props {
   playerFromDb: PlayerFromDb | null;
@@ -95,6 +96,7 @@ function EditPlayer(props: Props) {
           .map((playerSport) => playerSport.name) || [],
     },
   });
+  const [isLoadingForm, setIsLoadingForm] = useState(false);
 
   function handleChangePhoto(file: File | null) {
     if (file) {
@@ -147,9 +149,19 @@ function EditPlayer(props: Props) {
       });
     }
   }
+
   async function handleSubmit(values: UpdatePlayer) {
-    await PlayerService.updatePlayer(browserClient, values);
-    console.log({ values });
+    setIsLoadingForm(true);
+    const { ok, message } = await PlayerService.updatePlayer(browserClient, {
+      data: values,
+      oldData: {
+        playerSports: playerSportsFromDb,
+      },
+      sportsFromDb,
+    });
+    if (ok) toast.success("Jugador modificado correctamente!", message);
+    else toast.error("Ocurrio un error", message);
+    setIsLoadingForm(false);
   }
 
   return (
@@ -249,7 +261,7 @@ function EditPlayer(props: Props) {
         </div>
         <Button
           type="submit"
-          // disabled={isLoadingForm}
+          disabled={isLoadingForm}
           className="place-self-end"
         >
           Editar jugador
