@@ -1,9 +1,9 @@
-import type { Sport } from "@/entities/sport/sport.types";
+import type { SportFromDb } from "@/resources/sport/types";
 import { Switch } from "@mantine/core";
 import { MouseEvent } from "react";
 
 interface Props {
-  sports: Sport[];
+  sports: SportFromDb[];
   activeSports: string[];
   federatedSports: string[];
   onClickSport: (event: MouseEvent<HTMLInputElement>) => void;
