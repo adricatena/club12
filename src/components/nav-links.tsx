@@ -36,7 +36,7 @@ export const navLinks: NavLink[] = [
         label: "Crear equipo",
       },
       {
-        path: "/equipos/buscar",
+        path: "/equipos",
         label: "Buscar equipo",
       },
     ],
