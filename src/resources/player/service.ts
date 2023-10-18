@@ -64,6 +64,22 @@ const PlayerService = {
     );
     return { ok: true, message: "", data: mappedPlayerSports };
   },
+  async getPlayersSport(
+    client: SupabaseClient<Database>,
+    { sport_id }: { sport_id: string },
+  ): Promise<Return & { data: PlayerFromDb[] | null }> {
+    const { data, error } = await client
+      .from("players")
+      .select("* , players_sports!inner(sport_id)")
+      .eq("players_sports.sport_id", sport_id);
+    if (error) return { ok: false, message: error.message, data: null };
+
+    const playersSport = data.map((playersSport) => {
+      const { players_sports, ...data } = playersSport;
+      return data;
+    });
+    return { ok: true, message: "Jugadores encontrados", data: playersSport };
+  },
   async createPlayer(
     client: SupabaseClient<Database>,
     {
