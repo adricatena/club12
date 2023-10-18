@@ -4,6 +4,8 @@ import toast from "@/components/toast";
 import { browserClient, getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import { PlayerFromDb, PlayerSportFromDb } from "@/resources/player/types";
+import SportService from "@/resources/sport/service";
+import { SportFromDb } from "@/resources/sport/types";
 import { Table, Button, Loader, TextInput, Paper, Input, Radio, RadioGroup, Checkbox } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
@@ -11,17 +13,14 @@ import { MouseEvent, useState } from "react";
 
 
 interface Props {
-  sportsFromDb: SportFromDb[];
+  sportFromDb: SportFromDb | null;
   playerFromDb: PlayerFromDb[];
-  playerSportsFromDb: PlayerSportFromDb[];
-  teamSports: string[];
-  onClickSport: (event: MouseEvent<HTMLInputElement>) => void;
 }
 
 type Form = {
   photoSrc: string;
   photo?: File;
-  teamSports: string[];
+  teamSports: string;
   teamName: string;
 };
 
@@ -29,27 +28,27 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
   const client = getServerClient(context);
-  const {data:sportsFromDb} = await SportService.getSports(client); /* aca en un futuro va a venir solo el nombre del deporte getSport y le paso  el client y el nombre del deporte(el nombre viene de la ruta) */
-  const {data:playerFromDb} = await PlayerService.getPlayers(client, /* enviar active:true: solo jugadores activos, y si no envio nada o false: devolver todos */);
+  const sportFromUrl = context.query.deporte;
 
-  // for (const player of playerFromDb) {
-  //   player.playerSportsFromDb = await PlayerService.getPlayerSports(client, player.id);
-  // }
+  const { data: playerFromDb } = await PlayerService.getPlayers(client, /* enviar active:true: solo jugadores activos, y si no envio nada o false: devolver todos */);
+  const { data: sportsFromDb } = await SportService.getSports(client);
+
+  const sportFromDb = sportsFromDb?.filter((sport) => sport.name === sportFromUrl)[0]
 
   return {
     props: {
-      sportsFromDb,
       playerFromDb,
+      sportFromDb,
     },
   };
 };
 
-function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
+function CreateTeam({playerFromDb, sportFromDb }: Props) {
   const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
     initialValues: {
       teamName: "",
       photoSrc: "",
-      teamSports: [sportsFromDb[0].name],
+      teamSports: sportFromDb?.name || "",
     },
   });
 
@@ -70,30 +69,6 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
       photo: undefined,
     });
   }
-
-  function handleClickSportRadius({
-    currentTarget,
-  }: MouseEvent<HTMLInputElement>) {
-    const { checked, value } = currentTarget;
-    const sportName = sportsFromDb.find((sport) => sport.id === value)?.name;
-
-    if (checked && sportName) {
-      // Filtrar los jugadores que tienen el deporte seleccionado activo
-      const filteredPlayers = playerFromDb.filter((player) =>
-        player.playerSportsFromDb.some((sport: { name: string; }) => sport.name === sportName)
-      );
-
-      setPlayers(filteredPlayers);
-      setValues({
-        ...values,
-        teamSports: [sportName],
-      });
-    }
-  }
-
-
-
-
 
   //   async function handleSubmit(values: Form) {
   //     setIsLoadingForm(true);
@@ -130,9 +105,18 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
   //       setIsLoadingForm(false);
   //     }
   //   }
-  const [players, setPlayers] = useState(playerFromDb.filter((player) => player.active));
+  const [players, setPlayers] = useState(
+    playerFromDb.filter((player) =>
+      player.active 
+    )
+  );
+  console.log(playerFromDb);
+  console.log(sportFromDb);
+  console.log('Jugadores después del filtro:', players);
+
   const [team, setTeam] = useState([] as PlayerFromDb[]);
   const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState<string[]>([]);
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
   const handleAddToTeam = () => {
     const playersToAdd = players.filter((player) =>
@@ -140,11 +124,11 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
     );
     setTeam([...team, ...playersToAdd]);
     setPlayers(players.filter((player) => !selectedPlayers.includes(player.id)));
-    setSelectedPlayers([]);
     setSelectedPlayersInTeam([...selectedPlayersInTeam, ...playersToAdd.map((player) => player.id)]);
+    setSelectedPlayers([]);
   };
 
-    const handleRemoveFromTeam = () => {
+  const handleRemoveFromTeam = () => {
     const playersToRemove = team.filter((player) =>
       selectedPlayers.includes(player.id)
     );
@@ -153,8 +137,6 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
     setPlayers([...players, ...playersToRemove]);
     setSelectedPlayers([]);
   };
-
-  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
 
   const handleClickAddToTeam = (playerId: string) => {
     if (selectedPlayers.includes(playerId)) {
@@ -169,16 +151,15 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
 
   const filteredPlayers = players.filter((player) =>
     player.name.toLowerCase().includes(searchPlayers.toLowerCase()) ||
-    player.lastname.toLowerCase().includes(searchPlayers.toLowerCase())||
+    player.lastname.toLowerCase().includes(searchPlayers.toLowerCase()) ||
     player.dni.toString().toLowerCase().includes(searchPlayers.toLowerCase())
   );
 
   const filteredTeam = team.filter((player) =>
     player.name.toLowerCase().includes(searchTeam.toLowerCase()) ||
-    player.lastname.toLowerCase().includes(searchTeam.toLowerCase())||
+    player.lastname.toLowerCase().includes(searchTeam.toLowerCase()) ||
     player.dni.toString().toLowerCase().includes(searchTeam.toLowerCase())
   );
-
 
   return (
     <Layout
@@ -187,7 +168,6 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
         { name: "Crear", href: "/equipos/crear" },
       ]}
     >
-      {sportsFromDb ? (
         <form
           className="flex w-full items-stretch gap-7 self-center p-4"
         //   onSubmit={onSubmit(handleSubmit)}
@@ -220,10 +200,12 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
                 <div style={{ maxHeight: "350px", overflowY: "auto" }}>
                   <Table>
                     <Table.Tbody>
-                      <Table.Th></Table.Th>
-                      <Table.Th>Apellido</Table.Th>
-                      <Table.Th>Nombre</Table.Th>
-                      <Table.Th>DNI</Table.Th>
+                      <Table.Tr>
+                        <Table.Th></Table.Th>
+                        <Table.Th>Apellido</Table.Th>
+                        <Table.Th>Nombre</Table.Th>
+                        <Table.Th>DNI</Table.Th>
+                      </Table.Tr>
                       {filteredPlayers.map((player) => (
                         <Table.Tr key={player.id}>
                           <Table.Td>
@@ -278,10 +260,12 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
                 <div style={{ maxHeight: "350px", overflowY: "auto" }}>
                   <Table>
                     <Table.Tbody>
-                    <Table.Th></Table.Th>
-                      <Table.Th>Apellido</Table.Th>
-                      <Table.Th>Nombre</Table.Th>
-                      <Table.Th>DNI</Table.Th>
+                      <Table.Tr>
+                        <Table.Th></Table.Th>
+                        <Table.Th>Apellido</Table.Th>
+                        <Table.Th>Nombre</Table.Th>
+                        <Table.Th>DNI</Table.Th>
+                      </Table.Tr>
                       {filteredTeam.map((player) => (
                         <Table.Tr key={player.id}>
                           <Table.Td>
@@ -309,20 +293,10 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
                 onClickFileButton={handleChangePhoto}
                 onClickDeleteButton={handleClickDeletePhoto}
               />
-              {sportsFromDb ? (
-                <RadioGroup label="Deportes">
-                  {sportsFromDb.map((sport) => (
-                    <Radio
-                      label={sport.name}
-                      key={sport.id}
-                      value={sport.id}
-                      onClick={handleClickSportRadius}
-                    />
-                  ))}
-                </RadioGroup>
-              ) : (
-                <Loader />
-              )}
+              <div>
+                <label>Deporte:</label>
+                <p>{sportFromDb.name}</p>
+              </div>
             </div>
             <Button
               type="submit"
@@ -333,12 +307,7 @@ function CreateTeam({ sportsFromDb, playerFromDb, playerSportsFromDb }: Props) {
             </Button>
           </section>
         </form>
-      ) : (
-        <Loader />
-      )}
     </Layout>
   );
 }
-
-
 export default CreateTeam;
