@@ -66,19 +66,45 @@ const PlayerService = {
   },
   async getPlayersSport(
     client: SupabaseClient<Database>,
-    { sport_id }: { sport_id: string },
+    {
+      sport_id,
+      free_agents = true,
+    }: { sport_id: string; free_agents?: boolean },
   ): Promise<Return & { data: PlayerFromDb[] | null }> {
-    const { data, error } = await client
+    // Buscamos los jugadores que esten activos en ese deporte
+    const { data: allPlayersWithSport } = await client
       .from("players")
-      .select("* , players_sports!inner(sport_id)")
+      .select("*, players_sports!inner(sport_id)")
       .eq("players_sports.sport_id", sport_id);
-    if (error) return { ok: false, message: error.message, data: null };
 
-    const playersSport = data.map((playersSport) => {
-      const { players_sports, ...data } = playersSport;
-      return data;
-    });
-    return { ok: true, message: "Jugadores encontrados", data: playersSport };
+    let playersWithSport;
+    if (free_agents) {
+      // Buscamos los jugadores activos en el deporte y con equipos asignados
+      const { data: playersWithSportAndTeam } = await client
+        .from("players_teams")
+        .select("player_id, teams!inner(sport_id)")
+        .eq("teams.sport_id", sport_id);
+
+      // Filtramos los jugadores que estan activos y no estan asignados a ningun equipo
+      playersWithSport =
+        allPlayersWithSport?.filter((playerWithSport) => {
+          const playerHasTeam = playersWithSportAndTeam?.some(
+            (playerWithSportAndTeam) =>
+              playerWithSportAndTeam.player_id === playerWithSport.id,
+          ); // si el id del jugador esta dentro del arreglo de los jugadores con equipo, tiene equipo
+          return !playerHasTeam; // si no tiene equipo, lo devolvemos
+        }) ?? [];
+    } else playersWithSport = allPlayersWithSport ?? [];
+
+    // formateamos los datos para devolver solo lo necesario
+    const mappedPlayersSport = playersWithSport.map(
+      ({ players_sports, ...restOfPlayerData }) => restOfPlayerData,
+    );
+    return {
+      ok: true,
+      message: "Jugadores encontrados",
+      data: mappedPlayersSport ?? [],
+    };
   },
   async createPlayer(
     client: SupabaseClient<Database>,
