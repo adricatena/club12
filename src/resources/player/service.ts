@@ -1,12 +1,9 @@
 import type { Database } from "@/database/types";
 import { type SupabaseClient } from "@supabase/supabase-js";
+import { uploadPhoto } from "../helper";
 import type { SportFromDb } from "../sport/types";
 import type { Return } from "../types";
-import {
-  createFileName,
-  insertPlayerSports,
-  uploadPlayerPhoto,
-} from "./helper";
+import { getPlayerFilename, insertPlayerSports } from "./helper";
 import type {
   NewPlayer,
   PlayerFromDb,
@@ -41,7 +38,7 @@ const PlayerService = {
     name: string,
     lastname: string,
   ) {
-    const fileName = createFileName(dni, name, lastname);
+    const fileName = getPlayerFilename(dni, name, lastname);
     const { data } = client.storage.from("players").getPublicUrl(fileName);
     return { ok: true, message: "", data: data.publicUrl };
   },
@@ -135,12 +132,12 @@ const PlayerService = {
       };
     // Si tiene foto la guardamos
     if (photo) {
-      const { error } = await uploadPlayerPhoto({
+      const filename = getPlayerFilename(dni, name, lastname);
+      const { error } = await uploadPhoto({
         client,
-        dni,
-        name,
-        lastname,
+        filename,
         photo,
+        bucket: "players",
       });
       if (error) return { ok: false, message: error.message };
     }
@@ -196,7 +193,7 @@ const PlayerService = {
     if (error) return { ok: false, message: error.message };
 
     // actualizar tabla player_sport
-    const { activeSports, federatedSports } = data;
+    const { activeSports, federatedSports, dni, name, lastname } = data;
     const { playerSports: oldPlayerSports } = oldData;
     const player_id = updatedPlayerData[0].id;
     // si no tenia deportes activos previamente directamente agregamos los nuevos
@@ -273,15 +270,10 @@ const PlayerService = {
     // actualizar foto si es que cambio
     const { photo, photoSrc } = data;
     if (photo) {
-      await uploadPlayerPhoto({
-        client,
-        dni: data.dni,
-        name: data.name,
-        lastname: data.lastname,
-        photo,
-      });
+      const filename = getPlayerFilename(dni, name, lastname);
+      await uploadPhoto({ client, filename, photo, bucket: "players" });
     } else if (!photoSrc) {
-      const fileName = createFileName(data.dni, data.name, data.lastname);
+      const fileName = getPlayerFilename(data.dni, data.name, data.lastname);
       await client.storage.from("players").remove([fileName]);
     }
     return {
