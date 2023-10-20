@@ -9,12 +9,12 @@ import { SportFromDb } from "@/resources/sport/types";
 import { Table, Button, Loader, TextInput, Paper, Input, Radio, RadioGroup, Checkbox } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
-import { MouseEvent, useState } from "react";
+import { useState } from "react";
 
 
 interface Props {
   sportFromDb: SportFromDb | null;
-  playerFromDb: PlayerFromDb[];
+  playersFromDb: PlayerFromDb[] | null;
 }
 
 type Form = {
@@ -27,23 +27,34 @@ type Form = {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const client = getServerClient(context);
+  const emptyReturn = {
+    props: {
+      playersFromDb: [],
+      sportFromDb: null,
+    }
+  }
   const sportFromUrl = context.query.deporte;
+  if (!sportFromUrl || typeof (sportFromUrl) !== 'string') return emptyReturn;
 
-  const { data: playerFromDb } = await PlayerService.getPlayers(client, /* enviar active:true: solo jugadores activos, y si no envio nada o false: devolver todos */);
+  const client = getServerClient(context);
   const { data: sportsFromDb } = await SportService.getSports(client);
+  if (!sportsFromDb) return emptyReturn;
 
-  const sportFromDb = sportsFromDb?.filter((sport) => sport.name === sportFromUrl)[0]
+  const sportFromDb = sportsFromDb.filter((sport) => sport.name.toLowerCase() === sportFromUrl)[0]
+  if (!sportFromDb) return emptyReturn;
+
+  const { data: playersFromDb } = await PlayerService.getPlayersSport(client, { sport_id: sportFromDb.id,free_agents:true })
+
 
   return {
     props: {
-      playerFromDb,
+      playersFromDb,
       sportFromDb,
     },
   };
 };
 
-function CreateTeam({playerFromDb, sportFromDb }: Props) {
+function CreateTeam({ playersFromDb, sportFromDb }: Props) {
   const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
     initialValues: {
       teamName: "",
@@ -70,60 +81,58 @@ function CreateTeam({playerFromDb, sportFromDb }: Props) {
     });
   }
 
-  //   async function handleSubmit(values: Form) {
-  //     setIsLoadingForm(true);
-  //     try {
-  //       const { teamName } = values;
+  // async function handleSubmit(values: Form) {
+  //   setIsLoadingForm(true);
+  //   try {
+  //     const { teamName } = values;
 
-  //       if (!teamName)
-  //         throw new Error("Es necesario el nombre del equipo");
+  //     if (!teamName)
+  //       throw new Error("Es necesario el nombre del equipo");
 
-  //       const newTeamData: Team = {
-  //         name: teamName,
-  //       }");
+  //     const newTeamData: Team = {
+  //       name: teamName,
+  //     }");
 
-  //       const teamController = new teamController(client);
-  //       await teamController.createTeam(
-  //         newTeamData,
-  //         sportsFromDb,
-  //         values.photo,
-  //       );
+  //     const teamController = new teamController(client);
+  //     await teamController.createTeam(
+  //       newTeamData,
+  //       sportsFromDb,
+  //       values.photo,
+  //     );
 
-  //       toast.success(
-  //         "Equipo creado correctamente",
-  //         `El equipo ${teamName} se creo correctamente`,
-  //       );
-  //       reset();
-  //     } catch (error) {
-  //       console.error(error);
-  //       const message =
-  //         error instanceof Error
-  //           ? error.message
-  //           : "Ocurrio un error creando el jugador";
-  //       toast.error("Error creando el jugador", message);
-  //     } finally {
-  //       setIsLoadingForm(false);
-  //     }
+  //     toast.success(
+  //       "Equipo creado correctamente",
+  //       `El equipo ${teamName} se creo correctamente`,
+  //     );
+  //     reset();
+  //   } catch (error) {
+  //     console.error(error);
+  //     const message =
+  //       error instanceof Error
+  //         ? error.message
+  //         : "Ocurrio un error creando el jugador";
+  //     toast.error("Error creando el jugador", message);
+  //   } finally {
+  //     setIsLoadingForm(false);
   //   }
+  // }
+
   const [players, setPlayers] = useState(
-    playerFromDb.filter((player) =>
-      player.active 
+    playersFromDb?.filter((player) =>
+      player.active
     )
   );
-  console.log(playerFromDb);
-  console.log(sportFromDb);
-  console.log('Jugadores después del filtro:', players);
-
   const [team, setTeam] = useState([] as PlayerFromDb[]);
   const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState<string[]>([]);
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [isPlayersTableSelected, setIsPlayersTableSelected] = useState(false);
 
   const handleAddToTeam = () => {
-    const playersToAdd = players.filter((player) =>
+    const playersToAdd = players?.filter((player) =>
       selectedPlayers.includes(player.id)
-    );
+    ) || [];
     setTeam([...team, ...playersToAdd]);
-    setPlayers(players.filter((player) => !selectedPlayers.includes(player.id)));
+    setPlayers(players?.filter((player) => !selectedPlayers.includes(player.id)));
     setSelectedPlayersInTeam([...selectedPlayersInTeam, ...playersToAdd.map((player) => player.id)]);
     setSelectedPlayers([]);
   };
@@ -134,22 +143,36 @@ function CreateTeam({playerFromDb, sportFromDb }: Props) {
     );
 
     setTeam(team.filter((player) => !selectedPlayers.includes(player.id)));
-    setPlayers([...players, ...playersToRemove]);
+    setPlayers([...(players ?? []), ...playersToRemove]);
     setSelectedPlayers([]);
   };
 
   const handleClickAddToTeam = (playerId: string) => {
-    if (selectedPlayers.includes(playerId)) {
-      setSelectedPlayers(selectedPlayers.filter((id) => id !== playerId));
+    if (isPlayersTableSelected) {
+      // Estás en la tabla de jugadores
+      if (selectedPlayersInTeam.includes(playerId)) {
+        // Si el jugador ya está en el equipo, lo deseleccionamos
+        setSelectedPlayersInTeam(selectedPlayersInTeam.filter((id) => id !== playerId));
+      } else {
+        // Si el jugador no está en el equipo, lo seleccionamos
+        setSelectedPlayersInTeam([...selectedPlayersInTeam, playerId]);
+      }
     } else {
-      setSelectedPlayers([...selectedPlayers, playerId]);
+      // Estás en la tabla de equipo
+      if (selectedPlayers.includes(playerId)) {
+        // Si el jugador ya está seleccionado, lo deseleccionamos
+        setSelectedPlayers(selectedPlayers.filter((id) => id !== playerId));
+      } else {
+        // Si el jugador no está seleccionado, lo seleccionamos
+        setSelectedPlayers([...selectedPlayers, playerId]);
+      }
     }
   };
 
   const [searchPlayers, setSearchPlayers] = useState<string>("");
   const [searchTeam, setSearchTeam] = useState<string>("");
 
-  const filteredPlayers = players.filter((player) =>
+  const filteredPlayers = players?.filter((player) =>
     player.name.toLowerCase().includes(searchPlayers.toLowerCase()) ||
     player.lastname.toLowerCase().includes(searchPlayers.toLowerCase()) ||
     player.dni.toString().toLowerCase().includes(searchPlayers.toLowerCase())
@@ -168,145 +191,126 @@ function CreateTeam({playerFromDb, sportFromDb }: Props) {
         { name: "Crear", href: "/equipos/crear" },
       ]}
     >
-        <form
-          className="flex w-full items-stretch gap-7 self-center p-4"
-        //   onSubmit={onSubmit(handleSubmit)}
-        >
-          <section className="flex w-full flex-col gap-5">
-            <TextInput
-              label="Nombre del Equipo"
-              placeholder="Boston Celtics"
-              required
-              {...getInputProps("teamName")}
-            />
-            <div className="flex justify-center items-center space-x-4">
-              <Paper
-                shadow="xs"
-                p="xs"
-                style={{
-                  maxWidth: "300px",
-                  maxHeight: "500px",
-                  minHeight: "400px",
-                  minWidth: "200px",
-                }}
-              >
-                <h2 className="text-lg font-semibold mb-4">Jugadores</h2>
-                <Input
-                  placeholder="Buscar jugador"
-                  rightSection={<i className="fas fa-search"></i>}
-                  value={searchPlayers}
-                  onChange={(event) => setSearchPlayers(event.currentTarget.value)}
-                />
-                <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                  <Table>
-                    <Table.Tbody>
-                      <Table.Tr>
-                        <Table.Th></Table.Th>
-                        <Table.Th>Apellido</Table.Th>
-                        <Table.Th>Nombre</Table.Th>
-                        <Table.Th>DNI</Table.Th>
-                      </Table.Tr>
-                      {filteredPlayers.map((player) => (
-                        <Table.Tr key={player.id}>
-                          <Table.Td>
-                            <Checkbox
-                              checked={selectedPlayers.includes(player.id)}
-                              onChange={() => handleClickAddToTeam(player.id)}
-                            />
-                          </Table.Td>
-                          <Table.Td>{`${player.lastname}`}</Table.Td>
-                          <Table.Td>{`${player.name}`}</Table.Td>
-                          <Table.Td>{`${player.dni}`}</Table.Td>
-                        </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
-                </div>
-              </Paper>
-              <div className="flex flex-col items-center justify-center space-y-2">
-                <Button
-                  onClick={handleAddToTeam}
-                  variant="primary"
-                  className="w-auto"
-                >
-                  Agregar
-                </Button>
-                <Button
-                  onClick={handleRemoveFromTeam}
-                  variant="danger"
-                  className="w-auto"
-                >
-                  Quitar
-                </Button>
-              </div>
-              <Paper
-                shadow="xs"
-                p="xs"
-                style={{
-                  maxWidth: "300px",
-                  maxHeight: "500px",
-                  minHeight: "400px",
-                  minWidth: "200px",
-                }}
-              >
-                <h2 className="text-lg font-semibold mb-4">Equipo</h2>
-
-                <Input
-                  placeholder="Buscar jugador"
-                  rightSection={<i className="fas fa-search"></i>}
-                  value={searchTeam}
-                  onChange={(event) => setSearchTeam(event.currentTarget.value)}
-                />
-                <div style={{ maxHeight: "350px", overflowY: "auto" }}>
-                  <Table>
-                    <Table.Tbody>
-                      <Table.Tr>
-                        <Table.Th></Table.Th>
-                        <Table.Th>Apellido</Table.Th>
-                        <Table.Th>Nombre</Table.Th>
-                        <Table.Th>DNI</Table.Th>
-                      </Table.Tr>
-                      {filteredTeam.map((player) => (
-                        <Table.Tr key={player.id}>
-                          <Table.Td>
-                            <Checkbox
-                              checked={selectedPlayers.includes(player.id)}
-                              onChange={() => handleClickAddToTeam(player.id)}
-                            />
-                          </Table.Td>
-                          <Table.Td>{`${player.lastname}`}</Table.Td>
-                          <Table.Td>{`${player.name}`}</Table.Td>
-                          <Table.Td>{`${player.dni}`}</Table.Td>
-                        </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
-
-                </div>
-              </Paper>
-            </div>
-          </section>
-          <section className="grid">
-            <div className="flex flex-col gap-5">
-              <InputPhoto
-                photoSrc={values.photoSrc}
-                onClickFileButton={handleChangePhoto}
-                onClickDeleteButton={handleClickDeletePhoto}
+      <form
+        className="flex w-full items-stretch gap-7 self-center p-4"
+      //   onSubmit={onSubmit(handleSubmit)}
+      >
+        <section className="flex w-full flex-col gap-5">
+          <TextInput
+            label="Nombre del Equipo"
+            placeholder="Boston Celtics"
+            required
+            {...getInputProps("teamName")}
+          />
+          <div className="flex justify-center items-center space-x-4">
+            <Paper shadow="xs" p="xs" className="w-full" style={{ minHeight: "300px", minWidth: "300px" }}>
+              <h2 className="text-lg font-semibold mb-4">Jugadores</h2>
+              <Input
+                placeholder="Buscar jugador"
+                rightSection={<i className="fas fa-search"></i>}
+                value={searchPlayers}
+                onChange={(event) => setSearchPlayers(event.currentTarget.value)}
               />
-              <div>
-                <label>Deporte:</label>
-                <p>{sportFromDb.name}</p>
+              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                <Table className="w-full">
+                  <Table.Tbody>
+                    <Table.Tr>
+                      <Table.Th></Table.Th>
+                      <Table.Th>Apellido</Table.Th>
+                      <Table.Th>Nombre</Table.Th>
+                      <Table.Th>DNI</Table.Th>
+                    </Table.Tr>
+                    {filteredPlayers?.map((player) => (
+                      <Table.Tr key={player.id}>
+                        <Table.Td>
+                          <Checkbox
+                            checked={selectedPlayers.includes(player.id)}
+                            onChange={() => handleClickAddToTeam(player.id)}
+                          />
+                        </Table.Td>
+                        <Table.Td>{`${player.lastname}`}</Table.Td>
+                        <Table.Td>{`${player.name}`}</Table.Td>
+                        <Table.Td>{`${player.dni}`}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
               </div>
+            </Paper>
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <Button
+                onClick={handleAddToTeam}
+                variant="primary"
+                className="w-[100px]" 
+              >
+                Agregar
+              </Button>
+              <Button
+                onClick={handleRemoveFromTeam}
+                variant="danger"
+                className="w-[100px]"
+              >
+                Quitar
+              </Button>
             </div>
-            <Button
-              type="submit"
-              disabled={isLoadingForm}
-              className="place-self-end"
-            >
-              Crear jugador
-            </Button>
-          </section>
-        </form>
+            <Paper shadow="xs" p="xs" className="w-full" style={{ minHeight: "300px", minWidth: "300px" }}>
+              <h2 className="text-lg font-semibold mb-4">Equipo</h2>
+              <Input
+                placeholder="Buscar jugador"
+                rightSection={<i className="fas fa-search"></i>}
+                value={searchTeam}
+                onChange={(event) => setSearchTeam(event.currentTarget.value)}
+              />
+              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+                <Table className="w-full">
+                  <Table.Tbody>
+                    <Table.Tr>
+                      <Table.Th></Table.Th>
+                      <Table.Th>Apellido</Table.Th>
+                      <Table.Th>Nombre</Table.Th>
+                      <Table.Th>DNI</Table.Th>
+                    </Table.Tr>
+                    {filteredTeam.map((player) => (
+                      <Table.Tr key={player.id}>
+                        <Table.Td>
+                          <Checkbox
+                            checked={selectedPlayers.includes(player.id)}
+                            onChange={() => handleClickAddToTeam(player.id)}
+                          />
+                        </Table.Td>
+                        <Table.Td>{`${player.lastname}`}</Table.Td>
+                        <Table.Td>{`${player.name}`}</Table.Td>
+                        <Table.Td>{`${player.dni}`}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+
+              </div>
+            </Paper>
+          </div>
+        </section>
+        <section className="grid">
+          <div className="flex flex-col gap-5">
+            <InputPhoto
+              photoSrc={values.photoSrc}
+              onClickFileButton={handleChangePhoto}
+              onClickDeleteButton={handleClickDeletePhoto}
+            />
+            <div className="flex flex-col gap-2">
+              <label className="text-gray-600">Deporte:</label>
+              <a className="text-xl font-semibold">{sportFromDb?.name}</a>
+            </div>
+          </div>
+          <Button
+            type="submit"
+            disabled={isLoadingForm}
+            className="place-self-end"
+          >
+            Crear jugador
+          </Button>
+        </section>
+      </form>
     </Layout>
   );
 }
