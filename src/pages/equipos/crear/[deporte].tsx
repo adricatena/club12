@@ -43,7 +43,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const sportFromDb = sportsFromDb.filter((sport) => sport.name.toLowerCase() === sportFromUrl)[0]
   if (!sportFromDb) return emptyReturn;
 
-  const { data: playersFromDb } = await PlayerService.getPlayersSport(client, { sport_id: sportFromDb.id/*,free_agent:true*/ })
+  const { data: playersFromDb } = await PlayerService.getPlayersSport(client, { sport_id: sportFromDb.id,free_agents:true })
 
 
   return {
@@ -148,10 +148,24 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
   };
 
   const handleClickAddToTeam = (playerId: string) => {
-    if (selectedPlayers.includes(playerId)) {
-      setSelectedPlayers(selectedPlayers.filter((id) => id !== playerId));
+    if (isPlayersTableSelected) {
+      // Estás en la tabla de jugadores
+      if (selectedPlayersInTeam.includes(playerId)) {
+        // Si el jugador ya está en el equipo, lo deseleccionamos
+        setSelectedPlayersInTeam(selectedPlayersInTeam.filter((id) => id !== playerId));
+      } else {
+        // Si el jugador no está en el equipo, lo seleccionamos
+        setSelectedPlayersInTeam([...selectedPlayersInTeam, playerId]);
+      }
     } else {
-      setSelectedPlayers([...selectedPlayers, playerId]);
+      // Estás en la tabla de equipo
+      if (selectedPlayers.includes(playerId)) {
+        // Si el jugador ya está seleccionado, lo deseleccionamos
+        setSelectedPlayers(selectedPlayers.filter((id) => id !== playerId));
+      } else {
+        // Si el jugador no está seleccionado, lo seleccionamos
+        setSelectedPlayers([...selectedPlayers, playerId]);
+      }
     }
   };
 
