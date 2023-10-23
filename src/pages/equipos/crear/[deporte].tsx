@@ -3,10 +3,12 @@ import Layout from "@/components/layout";
 import toast from "@/components/toast";
 import { browserClient, getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
-import { PlayerFromDb, PlayerSportFromDb } from "@/resources/player/types";
+import { PlayerFromDb } from "@/resources/player/types";
 import SportService from "@/resources/sport/service";
 import { SportFromDb } from "@/resources/sport/types";
-import { Table, Button, Loader, TextInput, Paper, Input, Radio, RadioGroup, Checkbox } from "@mantine/core";
+import TeamService from "@/resources/team/service";
+import { NewTeam } from "@/resources/team/types";
+import { Button, Checkbox, Input, Paper, Table, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
 import { useState } from "react";
@@ -16,13 +18,6 @@ interface Props {
   sportFromDb: SportFromDb | null;
   playersFromDb: PlayerFromDb[] | null;
 }
-
-type Form = {
-  photoSrc: string;
-  photo?: File;
-  teamSports: string;
-  teamName: string;
-};
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
@@ -55,11 +50,20 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 };
 
 function CreateTeam({ playersFromDb, sportFromDb }: Props) {
-  const { setValues, reset, onSubmit, getInputProps, values } = useForm<Form>({
+  const { setValues, reset, onSubmit, getInputProps, values } = useForm<NewTeam>({
     initialValues: {
-      teamName: "",
+      name: "",
+      sport: sportFromDb || { name: "", id: "" },
       photoSrc: "",
-      teamSports: sportFromDb?.name || "",
+      players: [],
+    },
+    validate: {
+      name: (name) => {
+        if (!name || name.trim() === "") {
+          return "El nombre del equipo es obligatorio";
+        }
+        return null;
+      },
     },
   });
 
@@ -81,41 +85,24 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
     });
   }
 
-  // async function handleSubmit(values: Form) {
-  //   setIsLoadingForm(true);
-  //   try {
-  //     const { teamName } = values;
+   async function handleSubmit(values: NewTeam) {
+    console.log('Datos a enviar:', values);
+     setIsLoadingForm(true);
+       const { ok, message } = await TeamService.createTeam( 
+        browserClient,
+        values,
+      );
 
-  //     if (!teamName)
-  //       throw new Error("Es necesario el nombre del equipo");
-
-  //     const newTeamData: Team = {
-  //       name: teamName,
-  //     }");
-
-  //     const teamController = new teamController(client);
-  //     await teamController.createTeam(
-  //       newTeamData,
-  //       sportsFromDb,
-  //       values.photo,
-  //     );
-
-  //     toast.success(
-  //       "Equipo creado correctamente",
-  //       `El equipo ${teamName} se creo correctamente`,
-  //     );
-  //     reset();
-  //   } catch (error) {
-  //     console.error(error);
-  //     const message =
-  //       error instanceof Error
-  //         ? error.message
-  //         : "Ocurrio un error creando el jugador";
-  //     toast.error("Error creando el jugador", message);
-  //   } finally {
-  //     setIsLoadingForm(false);
-  //   }
-  // }
+if(ok){
+       toast.success(
+         "Equipo creado correctamente",
+         `El equipo ${values.name} se creo correctamente`,
+       );
+       reset();}
+       else toast.error("Error creando el equipo", message);
+     
+       setIsLoadingForm(false);
+   }
 
   const [players, setPlayers] = useState(
     playersFromDb?.filter((player) =>
@@ -132,6 +119,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
       selectedPlayers.includes(player.id)
     ) || [];
     setTeam([...team, ...playersToAdd]);
+    values.players = [...team, ...playersToAdd]
     setPlayers(players?.filter((player) => !selectedPlayers.includes(player.id)));
     setSelectedPlayersInTeam([...selectedPlayersInTeam, ...playersToAdd.map((player) => player.id)]);
     setSelectedPlayers([]);
@@ -193,14 +181,14 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
     >
       <form
         className="flex w-full items-stretch gap-7 self-center p-4"
-      //   onSubmit={onSubmit(handleSubmit)}
+         onSubmit={onSubmit(handleSubmit)}
       >
         <section className="flex w-full flex-col gap-5">
           <TextInput
             label="Nombre del Equipo"
             placeholder="Boston Celtics"
             required
-            {...getInputProps("teamName")}
+            {...getInputProps("name")}
           />
           <div className="flex justify-center items-center space-x-4">
             <Paper shadow="xs" p="xs" className="w-full" style={{ minHeight: "300px", minWidth: "300px" }}>
@@ -241,7 +229,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
               <Button
                 onClick={handleAddToTeam}
                 variant="primary"
-                className="w-[100px]" 
+                className="w-[100px]"
               >
                 Agregar
               </Button>
@@ -307,7 +295,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
             disabled={isLoadingForm}
             className="place-self-end"
           >
-            Crear jugador
+            Crear Equipo
           </Button>
         </section>
       </form>

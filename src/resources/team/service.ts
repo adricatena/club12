@@ -13,7 +13,7 @@ const TeamService = {
     const { name, sport, photo, players } = data;
     // Chequeamos si el equipo  existe
     const { data: teamExist, error: teamExistError } = await client
-      .from("team")
+      .from("teams")
       .select("id")
       .match({ name, sport_id: sport.id });
     if (teamExistError) return { ok: false, message: teamExistError.message };

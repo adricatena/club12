@@ -4,6 +4,7 @@ import type { SportFromDb } from "../sport/types";
 export type NewTeam = {
   name: string;
   sport: SportFromDb;
-  photo: File;
+  photoSrc: string;
+  photo?: File;
   players: PlayerFromDb[];
 };
