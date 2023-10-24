@@ -2,12 +2,13 @@ import Layout from "@/components/layout";
 import { TableSort } from "@/components/table-sort";
 import { getServerClient } from "@/database/clients";
 import SportService from "@/resources/sport/service";
+import type { SportFromDb } from "@/resources/sport/types";
 import TeamService from "@/resources/team/service";
 import type { TeamFromDb } from "@/resources/team/types";
 import { type GetServerSideProps } from "next";
 
 interface Props {
-  defaultSportName: string;
+  defaultSportFromDb: SportFromDb | null;
   teams: TeamFromDb[] | null;
 }
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -17,40 +18,44 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const emptyReturn: { props: Props } = {
     props: {
       teams: null,
-      defaultSportName,
+      defaultSportFromDb: null,
     },
   };
   const client = getServerClient(context);
-  const { data: sportsFromDb } = await SportService.getSport(client, {
+  const { data: sportFromDb } = await SportService.getSport(client, {
     name: defaultSportName,
   });
-  if (!sportsFromDb) return emptyReturn;
+  if (!sportFromDb) return emptyReturn;
 
   const { data: teams, ok } = await TeamService.getTeams(client, {
-    sport_id: sportsFromDb.id,
+    sport_id: sportFromDb.id,
   });
   if (!ok || !teams) return emptyReturn;
 
   return {
     props: {
       teams,
-      defaultSportName,
+      defaultSportFromDb: sportFromDb,
     },
   };
 };
 
-function Teams({ teams, defaultSportName }: Props) {
-  console.log({ teams, defaultSportName });
+function Teams({ teams, defaultSportFromDb }: Props) {
+  console.log({ teams, defaultSportFromDb });
   return (
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos" }]}>
       Teams
       {teams && (
         <TableSort
-          columnsHeaders={[
-            { name: "name", label: "Nombre" },
-            { label: "Deporte", name: "sport_id" },
+          columnsKeys={[
+            { key: "name", label: "Nombre" },
+            { key: "sport_name", label: "Deporte" },
           ]}
-          data={teams.map((team) => ({ ...team, id: team.id }))}
+          rowsData={teams.map((team) => ({
+            ...team,
+            sport_name: defaultSportFromDb!.name,
+            path: `/equipos/${defaultSportFromDb!.name}/${team.name}`,
+          }))}
         />
       )}
     </Layout>

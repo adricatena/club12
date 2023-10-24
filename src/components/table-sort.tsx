@@ -1,6 +1,7 @@
 import { Table } from "@mantine/core";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { useState, type MouseEvent } from "react";
+import ULink from "./unstyled-link";
 
 const enum OrderMethods {
   default,
@@ -18,13 +19,13 @@ interface Props {
     key: string;
     label: string;
   }[];
-  rowsData:
+  rowsData: { id: string; [key: string]: string; path: string }[];
 }
 export function TableSort({ columnsKeys, rowsData }: Props) {
   const [orderBy, setOrderBy] = useState<string>();
   const [orderMethod, setOrderMethod] = useState(OrderMethods.default);
-  const [rows, setRows] = useState(rowsData)
-  
+  const [rows, setRows] = useState(rowsData);
+
   function handleClickColumnHeader(event: MouseEvent<HTMLTableCellElement>) {
     const { id } = event.currentTarget;
     let newOrderMethod: OrderMethods;
@@ -34,16 +35,16 @@ export function TableSort({ columnsKeys, rowsData }: Props) {
       newOrderMethod = ORDER_METHODS[OrderMethods.default];
       setOrderBy(id);
     }
-    const sortedPlayers = [...players];
-    sortedPlayers.sort((prevPlayer, nextPlayer) => {
-      const prevPlayerValue = prevPlayer[id];
-      const nextPlayerValue = nextPlayer[id];
+    const sortedRows = [...rows];
+    sortedRows.sort((prevRow, nextRow) => {
+      const prevRowValue = prevRow[id];
+      const nextRowValue = nextRow[id];
 
-      const order = prevPlayerValue > nextPlayerValue;
+      const order = prevRowValue > nextRowValue;
       if (newOrderMethod === OrderMethods.ascendent) return order ? 1 : -1;
       return order ? -1 : 1;
     });
-    setPlayers(sortedPlayers);
+    setRows(sortedRows);
     setOrderMethod(newOrderMethod);
   }
 
@@ -70,13 +71,11 @@ export function TableSort({ columnsKeys, rowsData }: Props) {
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        {players.map((player) => (
-          <Table.Tr key={player.dni}>
+        {rows.map((row) => (
+          <Table.Tr key={row.id}>
             {columnsKeys.map((columnKey) => (
               <Table.Td key={columnKey.key}>
-                <ULink href={`/jugadores/${player.dni}`}>
-                  {player[columnKey.key]}
-                </ULink>
+                <ULink href={row.path}>{row[columnKey.key]}</ULink>
               </Table.Td>
             ))}
           </Table.Tr>
