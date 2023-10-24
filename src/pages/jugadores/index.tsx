@@ -3,7 +3,7 @@ import ULink from "@/components/unstyled-link";
 import { getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import { PlayerFromDb } from "@/resources/player/types";
-import { ActionIcon, Loader, NumberInput, Table } from "@mantine/core";
+import { ActionIcon, NumberInput, Table } from "@mantine/core";
 import { IconArrowDown, IconArrowUp, IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
 import { FormEvent, MouseEvent, useRef, useState } from "react";
@@ -113,42 +113,38 @@ export default function Players({ playersFromDb }: Props) {
             />
           </form>
         </section>
-        {players ? (
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              {columnsKeys.map((columnKey) => (
+                <Table.Th
+                  key={columnKey.key}
+                  id={columnKey.key}
+                  className="relative"
+                  onClick={handleClickColumnHeader}
+                >
+                  {columnKey.label}
+                  {columnKey.key === orderBy ? (
+                    <Arrow className="absolute bottom-1.5" />
+                  ) : null}
+                </Table.Th>
+              ))}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {players.map((player) => (
+              <Table.Tr key={player.dni}>
                 {columnsKeys.map((columnKey) => (
-                  <Table.Th
-                    key={columnKey.key}
-                    id={columnKey.key}
-                    className="relative"
-                    onClick={handleClickColumnHeader}
-                  >
-                    {columnKey.label}
-                    {columnKey.key === orderBy ? (
-                      <Arrow className="absolute bottom-1.5" />
-                    ) : null}
-                  </Table.Th>
+                  <Table.Td key={columnKey.key}>
+                    <ULink href={`/jugadores/${player.dni}`}>
+                      {player[columnKey.key]}
+                    </ULink>
+                  </Table.Td>
                 ))}
               </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {players.map((player) => (
-                <Table.Tr key={player.dni}>
-                  {columnsKeys.map((columnKey) => (
-                    <Table.Td key={columnKey.key}>
-                      <ULink href={`/jugadores/${player.dni}`}>
-                        {player[columnKey.key]}
-                      </ULink>
-                    </Table.Td>
-                  ))}
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        ) : (
-          <Loader />
-        )}
+            ))}
+          </Table.Tbody>
+        </Table>
       </>
     </Layout>
   );

@@ -16,6 +16,7 @@ export type NewPlayer = {
 };
 
 export type UpdatePlayer = NewPlayer & {
+  id: string;
   observations: string;
   active: boolean;
 };

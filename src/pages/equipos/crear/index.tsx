@@ -2,8 +2,7 @@ import Layout from "@/components/layout";
 import ULink from "@/components/unstyled-link";
 import Image from "next/image";
 
-export default MyComponent;
-function MyComponent() {
+function TeamSports() {
   return (
     <Layout breadcrumbs={[{ name: "Jugadores", href: "/jugadores" }]}>
       <div
@@ -59,3 +58,5 @@ function MyComponent() {
     </Layout>
   );
 }
+
+export default TeamSports;

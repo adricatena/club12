@@ -3,9 +3,20 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { uploadPhoto } from "../helper";
 import type { Return } from "../types";
 import { getTeamFilename } from "./helper";
-import type { NewTeam } from "./types";
+import type { NewTeam, TeamFromDb } from "./types";
 
 const TeamService = {
+  async getTeams(
+    client: SupabaseClient<Database>,
+    { sport_id }: { sport_id?: string },
+  ): Promise<Return & { data: TeamFromDb[] | null }> {
+    const baseQuery = client.from("teams").select();
+    const { data, error } = sport_id
+      ? await baseQuery.eq("sport_id", sport_id)
+      : await baseQuery;
+    if (error) return { ok: false, message: error.message, data: null };
+    return { ok: true, message: "Se encontraron equipos", data };
+  },
   async createTeam(
     client: SupabaseClient<Database>,
     data: NewTeam,

@@ -1,3 +1,4 @@
+import type { Database } from "@/database/types";
 import type { PlayerFromDb } from "../player/types";
 import type { SportFromDb } from "../sport/types";
 
@@ -8,3 +9,8 @@ export type NewTeam = {
   photo?: File;
   players: PlayerFromDb[];
 };
+
+export type TeamFromDb = Omit<
+  Database["public"]["Tables"]["teams"]["Row"],
+  "created_at"
+>;

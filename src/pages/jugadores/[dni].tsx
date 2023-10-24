@@ -94,6 +94,7 @@ function EditPlayer(props: Props) {
         playerSportsFromDb
           ?.filter((playerSport) => playerSport.federated)
           .map((playerSport) => playerSport.name) || [],
+      id: playerFromDb!.id,
     },
   });
   const [isLoadingForm, setIsLoadingForm] = useState(false);

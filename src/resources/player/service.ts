@@ -176,7 +176,7 @@ const PlayerService = {
     },
   ): Promise<Return> {
     // actualizar tabla players
-    const { data: updatedPlayerData, error } = await client
+    const { error } = await client
       .from("players")
       .update({
         active: data.active,
@@ -188,14 +188,13 @@ const PlayerService = {
         name: data.name,
         observations: data.observations,
       })
-      .eq("dni", data.dni)
-      .select("id");
+      .eq("id", data.id);
     if (error) return { ok: false, message: error.message };
 
     // actualizar tabla player_sport
     const { activeSports, federatedSports, dni, name, lastname } = data;
     const { playerSports: oldPlayerSports } = oldData;
-    const player_id = updatedPlayerData[0].id;
+    const { id: player_id } = data;
     // si no tenia deportes activos previamente directamente agregamos los nuevos
     if (!oldPlayerSports || !oldPlayerSports.length) {
       const { error } = await insertPlayerSports({
