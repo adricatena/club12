@@ -6,10 +6,12 @@ import type { SportFromDb } from "@/resources/sport/types";
 import TeamService from "@/resources/team/service";
 import type { TeamFromDb } from "@/resources/team/types";
 import { type GetServerSideProps } from "next";
+import { useState } from "react";
 
 interface Props {
   defaultSportFromDb: SportFromDb | null;
-  teams: TeamFromDb[] | null;
+  teamsFromDb: TeamFromDb[] | null;
+  sportsFromDb: SportFromDb[];
 }
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
@@ -17,31 +19,37 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
   const defaultSportName = "basket";
   const emptyReturn: { props: Props } = {
     props: {
-      teams: null,
+      teamsFromDb: null,
       defaultSportFromDb: null,
+      sportsFromDb: [],
     },
   };
   const client = getServerClient(context);
-  const { data: sportFromDb } = await SportService.getSport(client, {
+  const { data: defaultSportFromDb } = await SportService.getSport(client, {
     name: defaultSportName,
   });
-  if (!sportFromDb) return emptyReturn;
+  if (!defaultSportFromDb) return emptyReturn;
 
-  const { data: teams, ok } = await TeamService.getTeams(client, {
-    sport_id: sportFromDb.id,
+  const { data: sportsFromDb } = await SportService.getSports(client);
+  if (!sportsFromDb) return emptyReturn;
+
+  const { data: teamsFromDb, ok } = await TeamService.getTeams(client, {
+    sport_id: defaultSportFromDb.id,
   });
-  if (!ok || !teams) return emptyReturn;
+  if (!ok || !teamsFromDb) return emptyReturn;
 
   return {
     props: {
-      teams,
-      defaultSportFromDb: sportFromDb,
+      teamsFromDb,
+      defaultSportFromDb,
+      sportsFromDb,
     },
   };
 };
 
-function Teams({ teams, defaultSportFromDb }: Props) {
-  console.log({ teams, defaultSportFromDb });
+function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
+  const [teams, setTeams] = useState(teamsFromDb);
+
   return (
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos" }]}>
       Teams

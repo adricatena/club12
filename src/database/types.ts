@@ -11,7 +11,6 @@ export interface Database {
     Tables: {
       players: {
         Row: {
-          playerSportsFromDb: any
           active: boolean
           birthdate: string
           cellphone: string | null
@@ -134,18 +133,21 @@ export interface Database {
       }
       teams: {
         Row: {
+          active: boolean
           created_at: string | null
           id: string
           name: string
           sport_id: string
         }
         Insert: {
+          active?: boolean
           created_at?: string | null
           id?: string
           name: string
           sport_id: string
         }
         Update: {
+          active?: boolean
           created_at?: string | null
           id?: string
           name?: string

@@ -19,7 +19,7 @@ interface Props {
     key: string;
     label: string;
   }[];
-  rowsData: { id: string; [key: string]: string; path: string }[];
+  rowsData: { id: string; [key: string]: string | boolean; path: string }[];
 }
 export function TableSort({ columnsKeys, rowsData }: Props) {
   const [orderBy, setOrderBy] = useState<string>();
