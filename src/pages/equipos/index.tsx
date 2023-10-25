@@ -5,6 +5,7 @@ import SportService from "@/resources/sport/service";
 import type { SportFromDb } from "@/resources/sport/types";
 import TeamService from "@/resources/team/service";
 import type { TeamFromDb } from "@/resources/team/types";
+import { Select } from "@mantine/core";
 import { type GetServerSideProps } from "next";
 import { useState } from "react";
 
@@ -49,10 +50,23 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
 function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
   const [teams, setTeams] = useState(teamsFromDb);
+  const [selectedSport, setSelectedSport] = useState(defaultSportFromDb?.name);
 
   return (
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos" }]}>
-      Teams
+      <div>
+        {/* agregar buscador */}
+        <Select
+          label="Elegir Deporte"
+          placeholder="basket"
+          value={selectedSport}
+          // onChange={}
+          data={sportsFromDb.map((sport) => ({
+            value: sport.name,
+            label: sport.name,
+          }))}
+        />
+      </div>
       {teams && (
         <TableSort
           columnsKeys={[
@@ -61,8 +75,8 @@ function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
           ]}
           rowsData={teams.map((team) => ({
             ...team,
-            sport_name: defaultSportFromDb!.name,
-            path: `/equipos/${defaultSportFromDb!.name}/${team.name}`,
+            sport_name: selectedSport,
+            path: `/equipos/${selectedSport}/${team.name}`,
           }))}
         />
       )}
