@@ -26,7 +26,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
 export default function Players({ playersFromDb }: Props) {
   const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb ?? []);
-
   const searchPlayerRef = useRef<HTMLInputElement>(null);
 
   function handleSearchPlayerSubmit(event: FormEvent<HTMLFormElement>) {

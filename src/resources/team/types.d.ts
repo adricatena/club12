@@ -14,3 +14,8 @@ export type TeamFromDb = Omit<
   Database["public"]["Tables"]["teams"]["Row"],
   "created_at"
 >;
+
+export type UpdateTeam = NewTeam & {
+  id: string;
+  active: boolean;
+};
