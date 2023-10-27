@@ -1,6 +1,7 @@
 import Layout from "@/components/layout";
 import { TableSort } from "@/components/table-sort";
-import { getServerClient } from "@/database/clients";
+import toast from "@/components/toast";
+import { browserClient, getServerClient } from "@/database/clients";
 import SportService from "@/resources/sport/service";
 import type { SportFromDb } from "@/resources/sport/types";
 import TeamService from "@/resources/team/service";
@@ -50,7 +51,23 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
 function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
   const [teams, setTeams] = useState(teamsFromDb);
-  const [selectedSport, setSelectedSport] = useState(defaultSportFromDb?.name);
+  const [selectedSport, setSelectedSport] = useState(defaultSportFromDb);
+
+  async function handleChangeSportSelect(selectedSportId: string) {
+    setSelectedSport(
+      sportsFromDb.find((sportFromDb) => sportFromDb.id === selectedSportId) ??
+        null,
+    );
+    const { data, message, ok } = await TeamService.getTeams(browserClient, {
+      sport_id: selectedSportId,
+    });
+    if (data) {
+      setTeams(data);
+    } else {
+      toast.error("Error buscando equipos", message);
+      setTeams([]);
+    }
+  }
 
   return (
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos" }]}>
@@ -58,16 +75,15 @@ function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
         {/* agregar buscador */}
         <Select
           label="Elegir Deporte"
-          placeholder="basket"
-          value={selectedSport}
-          // onChange={}
+          placeholder={selectedSport?.name}
+          onChange={handleChangeSportSelect}
           data={sportsFromDb.map((sport) => ({
-            value: sport.name,
+            value: sport.id,
             label: sport.name,
           }))}
         />
       </div>
-      {teams && (
+      {teams?.length && (
         <TableSort
           columnsKeys={[
             { key: "name", label: "Nombre" },
@@ -75,8 +91,8 @@ function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
           ]}
           rowsData={teams.map((team) => ({
             ...team,
-            sport_name: selectedSport,
-            path: `/equipos/${selectedSport}/${team.name}`,
+            sport_name: selectedSport?.name,
+            path: `/equipos/${selectedSport?.name}/${team.name}`,
           }))}
         />
       )}

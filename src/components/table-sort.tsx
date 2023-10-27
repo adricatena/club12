@@ -56,12 +56,12 @@ export function TableSort({ columnsKeys, rowsData }: Props) {
   const Arrow =
     orderMethod === OrderMethods.ascendent ? IconChevronDown : IconChevronUp;
 
-  const filteredRows = rows.filter((row) =>
+  /* const filteredRows = rows.filter((row) =>
     Object.values(row).some(
       (value) =>
         value?.toString().toLowerCase().includes(searchTerm.toLowerCase()),
     ),
-  );
+  ); */
 
   return (
     <section className="flex w-full flex-col gap-5">
@@ -97,7 +97,7 @@ export function TableSort({ columnsKeys, rowsData }: Props) {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {filteredRows.map((row) => (
+          {rowsData.map((row) => (
             <Table.Tr key={row.id}>
               {columnsKeys.map((columnKey) => (
                 <Table.Td key={columnKey.key}>
