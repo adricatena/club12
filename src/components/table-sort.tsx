@@ -1,9 +1,5 @@
-import { ActionIcon, Table, TextInput } from "@mantine/core";
-import {
-  IconChevronDown,
-  IconChevronUp,
-  IconSearch,
-} from "@tabler/icons-react";
+import { Table } from "@mantine/core";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { useState, type MouseEvent } from "react";
 import ULink from "./unstyled-link";
 
@@ -29,7 +25,6 @@ export function TableSort({ columnsKeys, rowsData }: Props) {
   const [orderBy, setOrderBy] = useState<string>();
   const [orderMethod, setOrderMethod] = useState(OrderMethods.default);
   const [rows, setRows] = useState(rowsData);
-  const [searchTerm, setSearchTerm] = useState("");
 
   function handleClickColumnHeader(event: MouseEvent<HTMLTableCellElement>) {
     const { id } = event.currentTarget;
@@ -56,28 +51,8 @@ export function TableSort({ columnsKeys, rowsData }: Props) {
   const Arrow =
     orderMethod === OrderMethods.ascendent ? IconChevronDown : IconChevronUp;
 
-  /* const filteredRows = rows.filter((row) =>
-    Object.values(row).some(
-      (value) =>
-        value?.toString().toLowerCase().includes(searchTerm.toLowerCase()),
-    ),
-  ); */
-
   return (
     <section className="flex w-full flex-col gap-5">
-      <section className="mb-4 flex items-center justify-between">
-        <TextInput
-          label="Buscar"
-          placeholder="Buscar..."
-          rightSection={
-            <ActionIcon type="submit" variant="transparent" size="md">
-              <IconSearch />
-            </ActionIcon>
-          }
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.currentTarget.value)}
-        />
-      </section>
       <Table>
         <Table.Thead>
           <Table.Tr>

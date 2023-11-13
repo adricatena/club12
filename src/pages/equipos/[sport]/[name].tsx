@@ -29,6 +29,7 @@ interface Props {
   sportFromDb: SportFromDb | null;
   playersFromDb: PlayerFromDb[] | null;
   TeamFromDb: TeamFromDb | null;
+  playersByTeams: PlayerFromDb[] | null;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -39,6 +40,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       playersFromDb: [],
       sportFromDb: null,
       TeamFromDb: null,
+      playersByTeams: [],
     },
   };
   const sportFromUrl = String(context.query.sport);
@@ -71,17 +73,28 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     free_agents: true,
   });
 
-  console.log(TeamFromDb);
+  const { data: playersByTeams } = await TeamService.getPlayerByTeam(
+    client,
+    TeamFromDb?.id || "",
+  );
+
+  console.log(playersByTeams);
   return {
     props: {
       playersFromDb,
       sportFromDb,
       TeamFromDb,
+      playersByTeams,
     },
   };
 };
 
-function UpdateTeam({ playersFromDb, sportFromDb, TeamFromDb }: Props) {
+function UpdateTeam({
+  playersFromDb,
+  sportFromDb,
+  TeamFromDb,
+  playersByTeams,
+}: Props) {
   const { setValues, reset, onSubmit, getInputProps, values } =
     useForm<UpdateTeam>({
       initialValues: {
@@ -121,9 +134,12 @@ function UpdateTeam({ playersFromDb, sportFromDb, TeamFromDb }: Props) {
   }
 
   async function handleSubmit(values: UpdateTeam) {
-    console.log("Datos a enviar:", values);
+    console.log("Datos a enviar:", { values });
     setIsLoadingForm(true);
-    const { ok, message } = await TeamService.createTeam(browserClient, values);
+    const { ok, message } = await TeamService.updateTeam(browserClient, {
+      newData: values,
+      oldData: { players: playersByTeams || [] },
+    });
 
     if (ok) {
       toast.success(
@@ -139,7 +155,8 @@ function UpdateTeam({ playersFromDb, sportFromDb, TeamFromDb }: Props) {
   const [players, setPlayers] = useState(
     playersFromDb?.filter((player) => player.active),
   );
-  const [team, setTeam] = useState([] as PlayerFromDb[]);
+  const [team, setTeam] = useState<PlayerFromDb[]>(playersByTeams || []);
+
   const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState<string[]>(
     [],
   );
@@ -231,7 +248,7 @@ function UpdateTeam({ playersFromDb, sportFromDb, TeamFromDb }: Props) {
     <Layout
       breadcrumbs={[
         { name: "Equipos", href: "/equipos" },
-        { name: "Crear", href: "/equipos/crear" },
+        { name: "Editar", href: "/equipos" },
       ]}
     >
       <form
@@ -245,7 +262,10 @@ function UpdateTeam({ playersFromDb, sportFromDb, TeamFromDb }: Props) {
               placeholder="Boston Celtics"
               className="w-full"
               required
-              {...getInputProps("name")}
+              value={values.name}
+              onChange={(event) =>
+                setValues({ ...values, name: event.currentTarget.value })
+              }
             />
             <div>
               <p>Desactivar equipo</p>
@@ -391,7 +411,7 @@ function UpdateTeam({ playersFromDb, sportFromDb, TeamFromDb }: Props) {
             disabled={isLoadingForm}
             className="place-self-end"
           >
-            Crear Equipo
+            Editar Equipo
           </Button>
         </section>
       </form>

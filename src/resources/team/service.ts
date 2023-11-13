@@ -71,10 +71,15 @@ const TeamService = {
   ): Promise<Return> {
     const { id, name, active, photo, photoSrc, sport, players } = data.newData;
     const { players: oldPlayers } = data.oldData;
+    console.log("ID:", id);
+    console.log("Nuevo Nombre:", name);
+    console.log("Nuevo Estado Activo:", active);
     const { error } = await client
       .from("teams")
       .update({ name, active })
       .eq("id", id);
+    console.log("Respuesta de Actualización:", data);
+    console.log("Error de Actualización:", error);
     if (error) return { ok: false, message: error.message };
 
     const filename = getTeamFilename(sport.name, name);
@@ -125,6 +130,41 @@ const TeamService = {
     }
 
     return { ok: true, message: "Equipo modificado correctamente" };
+  },
+
+  async getPlayerByTeam(
+    client: SupabaseClient<Database>,
+    teamId: string,
+  ): Promise<Return & { data: PlayerFromDb[] | null }> {
+    const { data, error } = await client
+      .from("players_teams")
+      .select("player_id")
+      .eq("team_id", teamId);
+
+    if (error) {
+      return { ok: false, message: error.message, data: null };
+    }
+
+    const playerIds = data.map((player) => player.player_id);
+
+    if (playerIds.length === 0) {
+      // No hay jugadores asociados al equipo
+      return {
+        ok: true,
+        message: "No hay jugadores asociados al equipo",
+        data: [],
+      };
+    }
+
+    const { data: playersData, error: playersError } = await client
+      .from("players")
+      .select()
+      .in("id", playerIds);
+    if (playersError) {
+      return { ok: false, message: playersError.message, data: null };
+    }
+
+    return { ok: true, message: "Se encontraron jugadores", data: playersData };
   },
 };
 

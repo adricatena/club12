@@ -6,7 +6,8 @@ import SportService from "@/resources/sport/service";
 import type { SportFromDb } from "@/resources/sport/types";
 import TeamService from "@/resources/team/service";
 import type { TeamFromDb } from "@/resources/team/types";
-import { Select } from "@mantine/core";
+import { ActionIcon, Select, TextInput } from "@mantine/core";
+import { IconSearch } from "@tabler/icons-react";
 import { type GetServerSideProps } from "next";
 import { useState } from "react";
 
@@ -52,6 +53,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
   const [teams, setTeams] = useState(teamsFromDb);
   const [selectedSport, setSelectedSport] = useState(defaultSportFromDb);
+  const [searchTeam, setSearchTeam] = useState("");
 
   async function handleChangeSportSelect(selectedSportId: string) {
     setSelectedSport(
@@ -69,21 +71,49 @@ function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
     }
   }
 
+  function handleSearchTeam(event: React.ChangeEvent<HTMLInputElement>) {
+    setSearchTeam(event.target.value);
+
+    const filteredTeams = teamsFromDb!.filter(
+      (team) =>
+        team.name.toLowerCase().includes(event.target.value.toLowerCase()) &&
+        team.sport_id === selectedSport?.id,
+    );
+
+    setTeams(filteredTeams);
+  }
+
   return (
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos" }]}>
       <div>
-        {/* agregar buscador */}
-        <Select
-          label="Elegir Deporte"
-          placeholder={selectedSport?.name}
-          onChange={handleChangeSportSelect}
-          data={sportsFromDb.map((sport) => ({
-            value: sport.id,
-            label: sport.name,
-          }))}
-        />
+        <section className="mb-4 flex items-center justify-between">
+          <div style={{ marginRight: "20px" }}>
+            <TextInput
+              label="Buscar"
+              placeholder="Buscar..."
+              rightSection={
+                <ActionIcon type="submit" variant="transparent" size="md">
+                  <IconSearch />
+                </ActionIcon>
+              }
+              value={searchTeam}
+              onChange={handleSearchTeam}
+            />
+          </div>
+          <div style={{ width: "200px" }}>
+            <Select
+              label="Elegir Deporte"
+              placeholder={selectedSport?.name}
+              onChange={handleChangeSportSelect}
+              data={sportsFromDb.map((sport) => ({
+                value: sport.id,
+                label: sport.name,
+              }))}
+            />
+          </div>
+        </section>
       </div>
-      {teams?.length && (
+      {teams?.length ? (
         <TableSort
           columnsKeys={[
             { key: "name", label: "Nombre" },
@@ -95,6 +125,8 @@ function Teams({ teamsFromDb, defaultSportFromDb, sportsFromDb }: Props) {
             path: `/equipos/${selectedSport?.name}/${team.name}`,
           }))}
         />
+      ) : (
+        <p>No se encontraron equipos.</p>
       )}
     </Layout>
   );
