@@ -3,9 +3,11 @@ import { TableSort } from "@/components/table-sort";
 import { getServerClient } from "@/database/clients";
 import PlayerService from "@/resources/player/service";
 import { PlayerFromDb } from "@/resources/player/types";
-import { ActionIcon, NumberInput } from "@mantine/core";
+import SportService from "@/resources/sport/service";
+import { ActionIcon, Button, NumberInput } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
 import { FormEvent, useRef, useState } from "react";
 
 interface Props {
@@ -14,9 +16,25 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const { data: playersFromDb } = await PlayerService.getPlayers(
+  let page = context.query?.page;
+  let amount = context.query?.amount;
+  if (!page || typeof page !== "string") {
+    page = "1";
+  }
+  if (!amount || typeof amount !== "string") {
+    amount = "15";
+  }
+  console.log({ page, amount });
+  const client = getServerClient(context);
+  const defaultSportName = "basket";
+  const { data: defaultSportFromDb } = await SportService.getSport(client, {
+    name: defaultSportName,
+  });
+  /* const { data: playersFromDb } = await PlayerService.getPlayers(
     getServerClient(context),
-  );
+    {page: 1, amount: 20, sport_id: defaultSportFromDb.id }
+  ); */
+  const { data: playersFromDb } = await PlayerService.getPlayers(client);
   return {
     props: {
       playersFromDb,
@@ -27,7 +45,9 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 export default function Players({ playersFromDb }: Props) {
   const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb ?? []);
   const searchPlayerRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
+  // TODO: esto tiene que buscar directo en la base de datos de todos los jugadores
   function handleSearchPlayerSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const searchedInput = searchPlayerRef.current?.value;
@@ -50,7 +70,7 @@ export default function Players({ playersFromDb }: Props) {
         <section className="flex items-center justify-between">
           <form
             className="flex items-center"
-            onChange={handleSearchPlayerSubmit}
+            onSubmit={handleSearchPlayerSubmit}
           >
             <NumberInput
               label="Buscar por DNI"
@@ -63,6 +83,9 @@ export default function Players({ playersFromDb }: Props) {
               ref={searchPlayerRef}
             />
           </form>
+          <Button onClick={() => router.push(`/jugadores?page=2&amount=20`)}>
+            Navegar
+          </Button>
         </section>
         <TableSort
           columnsKeys={[

@@ -23,6 +23,7 @@ import { useForm } from "@mantine/form";
 import { modals } from "@mantine/modals";
 import type { GetServerSideProps } from "next";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 interface Props {
@@ -95,6 +96,7 @@ function UpdateTeam({
   TeamFromDb,
   playersByTeams,
 }: Props) {
+  const router = useRouter();
   const { setValues, reset, onSubmit, getInputProps, values } =
     useForm<UpdateTeam>({
       initialValues: {
@@ -117,6 +119,34 @@ function UpdateTeam({
 
   const [isLoadingForm, setIsLoadingForm] = useState(false);
 
+  const [players, setPlayers] = useState(
+    playersFromDb?.filter((player) => player.active),
+  );
+  const [team, setTeam] = useState<PlayerFromDb[]>(playersByTeams || []);
+
+  const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState<string[]>(
+    [],
+  );
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [isPlayersTableSelected, setIsPlayersTableSelected] = useState(false);
+
+  const [searchPlayers, setSearchPlayers] = useState<string>("");
+  const [searchTeam, setSearchTeam] = useState<string>("");
+
+  const filteredPlayers = players?.filter(
+    (player) =>
+      player.name.toLowerCase().includes(searchPlayers.toLowerCase()) ||
+      player.lastname.toLowerCase().includes(searchPlayers.toLowerCase()) ||
+      player.dni.toString().toLowerCase().includes(searchPlayers.toLowerCase()),
+  );
+
+  const filteredTeam = team.filter(
+    (player) =>
+      player.name.toLowerCase().includes(searchTeam.toLowerCase()) ||
+      player.lastname.toLowerCase().includes(searchTeam.toLowerCase()) ||
+      player.dni.toString().toLowerCase().includes(searchTeam.toLowerCase()),
+  );
+
   function handleChangePhoto(file: File | null) {
     if (file) {
       setValues({
@@ -132,36 +162,6 @@ function UpdateTeam({
       photo: undefined,
     });
   }
-
-  async function handleSubmit(values: UpdateTeam) {
-    console.log("Datos a enviar:", { values });
-    setIsLoadingForm(true);
-    const { ok, message } = await TeamService.updateTeam(browserClient, {
-      newData: values,
-      oldData: { players: playersByTeams || [] },
-    });
-
-    if (ok) {
-      toast.success(
-        "Equipo creado correctamente",
-        `El equipo ${values.name} se creo correctamente`,
-      );
-      reset();
-    } else toast.error("Error creando el equipo", message);
-
-    setIsLoadingForm(false);
-  }
-
-  const [players, setPlayers] = useState(
-    playersFromDb?.filter((player) => player.active),
-  );
-  const [team, setTeam] = useState<PlayerFromDb[]>(playersByTeams || []);
-
-  const [selectedPlayersInTeam, setSelectedPlayersInTeam] = useState<string[]>(
-    [],
-  );
-  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
-  const [isPlayersTableSelected, setIsPlayersTableSelected] = useState(false);
 
   const handleAddToTeam = () => {
     const playersToAdd =
@@ -212,22 +212,24 @@ function UpdateTeam({
     }
   };
 
-  const [searchPlayers, setSearchPlayers] = useState<string>("");
-  const [searchTeam, setSearchTeam] = useState<string>("");
+  async function handleSubmit(values: UpdateTeam) {
+    console.log("Datos a enviar:", { values });
+    setIsLoadingForm(true);
+    const { ok, message } = await TeamService.updateTeam(browserClient, {
+      newData: values,
+      oldData: { players: playersByTeams || [] },
+    });
 
-  const filteredPlayers = players?.filter(
-    (player) =>
-      player.name.toLowerCase().includes(searchPlayers.toLowerCase()) ||
-      player.lastname.toLowerCase().includes(searchPlayers.toLowerCase()) ||
-      player.dni.toString().toLowerCase().includes(searchPlayers.toLowerCase()),
-  );
+    if (ok) {
+      toast.success(
+        "Equipo creado correctamente",
+        `El equipo ${values.name} se creo correctamente`,
+      );
+      router.replace(`/equipos`);
+    } else toast.error("Error creando el equipo", message);
 
-  const filteredTeam = team.filter(
-    (player) =>
-      player.name.toLowerCase().includes(searchTeam.toLowerCase()) ||
-      player.lastname.toLowerCase().includes(searchTeam.toLowerCase()) ||
-      player.dni.toString().toLowerCase().includes(searchTeam.toLowerCase()),
-  );
+    setIsLoadingForm(false);
+  }
 
   if (!playersFromDb || !TeamFromDb)
     return (

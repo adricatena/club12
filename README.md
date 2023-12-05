@@ -1,3 +1,15 @@
+# TODO
+
+## Backend
+
+- agregar servicio de jugador para devolver una lista de jugadores por dni y por deporte (puede ser que tambien sea busqueda por cualquier deporte) con paginado
+
+## Front
+
+- selector de deportes en pagina de jugadores
+- paginado y busqueda de jugadores por deporte
+- arreglar mostrar la foto en equipos
+
 # Supabase
 
 ## Login
