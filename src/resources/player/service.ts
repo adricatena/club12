@@ -26,8 +26,23 @@ const PlayerService = {
   },
   async getPlayers(
     client: SupabaseClient<Database>,
+    { page = -1, amount = Infinity }: { page?: number; amount?: number } = {},
   ): Promise<Return & { data: PlayerFromDb[] | null }> {
-    const { data, error } = await client.from("players").select();
+    if (page === -1 || amount === Infinity) {
+      const { data, error } = await client.from("players").select();
+
+      return error
+        ? { ok: false, message: error.message, data: null }
+        : { ok: true, message: "", data };
+    }
+
+    const from = amount * page;
+    const to = amount * (page + 1) - 1;
+    const { data, error } = await client
+      .from("players")
+      .select()
+      .range(from, to);
+
     return error
       ? { ok: false, message: error.message, data: null }
       : { ok: true, message: "", data };
