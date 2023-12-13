@@ -15,19 +15,13 @@ interface Props {
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  let page = context.query?.page;
-  let amount = context.query?.amount;
-  if (!page || typeof page !== "string") {
-    page = "0";
-  }
-  if (!amount || typeof amount !== "string") {
-    amount = "15";
-  }
+  const page = Number(context.query?.page) || 0;
+  const amount = Number(context.query?.amount) || 15;
 
   const client = getServerClient(context);
   const { data: playersFromDb } = await PlayerService.getPlayers(client, {
-    page: Number(page),
-    amount: Number(amount),
+    page,
+    amount,
   });
 
   return {
