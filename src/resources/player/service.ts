@@ -24,6 +24,19 @@ const PlayerService = {
       ? { ok: false, message: error.message, data: null }
       : { ok: true, message: "Se encontro un jugador", data: data[0] };
   },
+  async getTotalPlayers(
+    client: SupabaseClient<Database>,
+  ): Promise<Return & { data: number }> {
+    const { data, error } = await client.from("players").select();
+
+    return error
+      ? { ok: false, message: error.message, data: 0 }
+      : {
+          ok: true,
+          message: "Cantidad total de jugadores obtenida",
+          data: data ? data.length : 0,
+        };
+  },
   async getPlayers(
     client: SupabaseClient<Database>,
     { page = -1, amount = Infinity }: { page?: number; amount?: number } = {},

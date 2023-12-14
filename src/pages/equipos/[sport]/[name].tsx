@@ -31,6 +31,7 @@ interface Props {
   playersFromDb: PlayerFromDb[] | null;
   TeamFromDb: TeamFromDb | null;
   playersByTeams: PlayerFromDb[] | null;
+  photoUrl: string | null;
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (
@@ -42,6 +43,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
       sportFromDb: null,
       TeamFromDb: null,
       playersByTeams: [],
+      photoUrl: null,
     },
   };
   const sportFromUrl = String(context.query.sport);
@@ -78,14 +80,18 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     client,
     TeamFromDb?.id || "",
   );
-
-  console.log(playersByTeams);
+  const { data: photoUrl } = await TeamService.getTeamPhotoUrl(
+    client,
+    sportFromDb?.name || "",
+    TeamFromDb?.name || "",
+  );
   return {
     props: {
       playersFromDb,
       sportFromDb,
       TeamFromDb,
       playersByTeams,
+      photoUrl,
     },
   };
 };
@@ -95,6 +101,7 @@ function UpdateTeam({
   sportFromDb,
   TeamFromDb,
   playersByTeams,
+  photoUrl,
 }: Props) {
   const router = useRouter();
   const { setValues, reset, onSubmit, getInputProps, values } =
@@ -102,7 +109,7 @@ function UpdateTeam({
       initialValues: {
         name: TeamFromDb?.name || "",
         sport: sportFromDb || { name: "", id: "" },
-        photoSrc: "",
+        photoSrc: photoUrl || "",
         players: [],
         id: TeamFromDb!.id,
         active: TeamFromDb?.active || false,
@@ -211,9 +218,7 @@ function UpdateTeam({
       }
     }
   };
-
   async function handleSubmit(values: UpdateTeam) {
-    console.log("Datos a enviar:", { values });
     setIsLoadingForm(true);
     const { ok, message } = await TeamService.updateTeam(browserClient, {
       newData: values,
