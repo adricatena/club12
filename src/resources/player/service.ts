@@ -27,14 +27,16 @@ const PlayerService = {
   async getTotalPlayers(
     client: SupabaseClient<Database>,
   ): Promise<Return & { data: number }> {
-    const { data, error } = await client.from("players").select();
+    const { count, error } = await client
+      .from("players")
+      .select("id", { count: "exact", head: true });
 
     return error
       ? { ok: false, message: error.message, data: 0 }
       : {
           ok: true,
           message: "Cantidad total de jugadores obtenida",
-          data: data ? data.length : 0,
+          data: count ?? 0,
         };
   },
   async getPlayers(
@@ -56,6 +58,18 @@ const PlayerService = {
       .select()
       .range(from, to);
 
+    return error
+      ? { ok: false, message: error.message, data: null }
+      : { ok: true, message: "", data };
+  },
+  async searchPlayers(
+    client: SupabaseClient<Database>,
+    { dni }: { dni: string },
+  ) {
+    const { data, error } = await client
+      .from("players")
+      .select()
+      .like("dni", `%${dni}%`);
     return error
       ? { ok: false, message: error.message, data: null }
       : { ok: true, message: "", data };
@@ -172,7 +186,7 @@ const PlayerService = {
     // Creamos el jugador
     const { data: insertedPlayerData, error } = await client
       .from("players")
-      .insert({ birthdate, cellphone, dni: Number(dni), email, lastname, name })
+      .insert({ birthdate, cellphone, dni, email, lastname, name })
       .select("id");
     if (error) return { ok: false, message: error.message };
     // Si tiene deportes activos los agregamos
@@ -210,7 +224,7 @@ const PlayerService = {
         active: data.active,
         birthdate: data.birthdate,
         cellphone: data.cellphone,
-        dni: Number(data.dni),
+        dni: data.dni,
         email: data.email,
         lastname: data.lastname,
         name: data.name,

@@ -167,28 +167,15 @@ const TeamService = {
     return { ok: true, message: "Se encontraron jugadores", data: playersData };
   },
 
-  async getTeamPhotoUrl(
+  getTeamPhotoUrl(
     client: SupabaseClient<Database>,
     sportId: string,
     teamName: string,
   ) {
-    try {
-      const formattedSportName = encodeURIComponent(sportId);
-      const formattedTeamName = encodeURIComponent(teamName);
+    const fileName = getTeamFilename(sportId, teamName);
+    const { data } = client.storage.from("teams").getPublicUrl(fileName);
 
-      const fileName = getTeamFilename(formattedSportName, formattedTeamName);
-      const { data } = await client.storage
-        .from("teams")
-        .getPublicUrl(fileName);
-
-      return { ok: true, message: "", data: data.publicUrl };
-    } catch (error) {
-      return {
-        ok: false,
-        message: "no se encontro la foto del equipo",
-        data: null,
-      };
-    }
+    return { ok: true, message: "", data: data.publicUrl };
   },
 };
 

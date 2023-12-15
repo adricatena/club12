@@ -9,43 +9,60 @@ import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import { FormEvent, useRef, useState } from "react";
 
+const DEFAULT_PAGE = 0;
+const DEFAULT_AMOUNT = 15;
+
 interface Props {
   playersFromDb: PlayerFromDb[] | null;
-  totalPlayers: number;
+  totalPlayersFromDb: number;
+  page: number;
+  amount: number;
 }
 export const getServerSideProps: GetServerSideProps<Props> = async (
   context,
 ) => {
-  const page = Number(context.query?.page) || 0;
-  const amount = Number(context.query?.amount) || 10;
+  let page = Number(context.query?.page) || DEFAULT_PAGE;
+  page = page < 0 ? DEFAULT_PAGE : page;
+
+  let amount = Number(context.query?.amount) || DEFAULT_AMOUNT;
+  amount = amount < 2 ? DEFAULT_AMOUNT : amount;
 
   const client = getServerClient(context);
   const { data: playersFromDb } = await PlayerService.getPlayers(client, {
-    page,
+    page: page - 1,
     amount,
   });
 
-  const { data: totalPlayers } = await PlayerService.getTotalPlayers(client);
+  const { data: totalPlayersFromDb } =
+    await PlayerService.getTotalPlayers(client);
 
   return {
     props: {
       playersFromDb,
-      totalPlayers,
+      totalPlayersFromDb,
+      page,
+      amount,
     },
   };
 };
 
-export default function Players({ playersFromDb, totalPlayers }: Props) {
+export default function Players({
+  playersFromDb,
+  totalPlayersFromDb,
+  page: pageFromDb,
+  amount: amoubtFromDb,
+}: Props) {
   const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb ?? []);
   const searchPlayerRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  const [page, setPage] = useState(1);
-  const [amount, setAmount] = useState(10);
+  const [totalPlayers, setTotalPlayers] = useState(totalPlayersFromDb);
+  const [page, setPage] = useState(pageFromDb);
+  const [amount, setAmount] = useState(amoubtFromDb);
 
   async function fetchData(page: number, amount: number) {
     const { data } = await PlayerService.getPlayers(browserClient, {
-      page,
+      page: page - 1,
       amount,
     });
 
@@ -56,33 +73,41 @@ export default function Players({ playersFromDb, totalPlayers }: Props) {
     }
   }
 
-  function handleSearchPlayerSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSearchPlayerSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const searchedInput = searchPlayerRef.current?.value;
 
     if (!searchedInput) {
       setPlayers(playersFromDb ?? []);
-      return;
+      setTotalPlayers(totalPlayersFromDb);
+      router.push(`/jugadores?page=${page}&amount=${DEFAULT_AMOUNT}`);
+    } else {
+      const { data: filterPlayers } = await PlayerService.searchPlayers(
+        browserClient,
+        { dni: searchedInput },
+      );
+
+      setPlayers(filterPlayers ?? []);
+      setTotalPlayers(filterPlayers?.length ?? 0);
+      router.push(
+        `/jugadores?page=${page}&amount=${DEFAULT_AMOUNT}&search=${searchedInput}`,
+      );
     }
 
-    const filterPlayers = playersFromDb!.filter((player) =>
-      player.dni.toString().includes(searchedInput),
-    );
-
-    setPlayers(filterPlayers);
+    setPage(1);
   }
 
   const handlePaginationChange = async (page: number) => {
     setPage(page);
     router.push(`/jugadores?page=${page}&amount=${amount}`, undefined);
-    await fetchData(page - 1, amount);
+    await fetchData(page, amount);
   };
 
   const handleItemsPerPageChange = async (value: number) => {
     setAmount(value);
+    router.push(`/jugadores?page=${1}&amount=${value}`, undefined);
     setPage(1);
-    router.push(`/jugadores?page=${page}&amount=${value}`, undefined);
-    await fetchData(0, value);
+    await fetchData(1, value);
   };
 
   return (
