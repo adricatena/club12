@@ -4,7 +4,7 @@ import Image from "next/image";
 
 function TeamSports() {
   return (
-    <Layout breadcrumbs={[{ name: "Jugadores", href: "/jugadores" }]}>
+    <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos/crear" }]}>
       <div
         style={{
           display: "flex",
