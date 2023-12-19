@@ -1,4 +1,8 @@
 # Supabase
+### comandos
+- `npx supabase db pull`
+- `npx supabase db dump -f supabase/seed.sql --data-only`
+- `npx supabase db reset --local`
 
 ## Login
 
