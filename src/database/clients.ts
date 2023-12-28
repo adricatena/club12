@@ -5,7 +5,7 @@ import {
   serialize,
 } from "@supabase/ssr";
 import { type GetServerSidePropsContext } from "next";
-import { type Database } from "./types";
+import type { Database } from "./types";
 
 export const browserClient = createBrowserClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

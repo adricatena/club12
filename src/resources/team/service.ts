@@ -71,15 +71,11 @@ const TeamService = {
   ): Promise<Return> {
     const { id, name, active, photo, photoSrc, sport, players } = data.newData;
     const { players: oldPlayers } = data.oldData;
-    console.log("ID:", id);
-    console.log("Nuevo Nombre:", name);
-    console.log("Nuevo Estado Activo:", active);
+
     const { error } = await client
       .from("teams")
       .update({ name, active })
       .eq("id", id);
-    console.log("Respuesta de Actualización:", data);
-    console.log("Error de Actualización:", error);
     if (error) return { ok: false, message: error.message };
 
     const filename = getTeamFilename(sport.name, name);

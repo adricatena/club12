@@ -37,7 +37,7 @@ function CreatePlayer({ sportsFromDb }: Props) {
         federatedSports: [],
       },
       validate: {
-        dni: (dni) => (dni.length > 7 ? null : "Ingrese un DNI valido"),
+        // dni: (dni) => (dni.length > 7 ? null : "Ingrese un DNI valido"),
         cellphone: (cell) =>
           cell.length > 10 || cell.length === 0
             ? null
@@ -138,10 +138,12 @@ function CreatePlayer({ sportsFromDb }: Props) {
             required
             {...getInputProps("lastname")}
           />
-          <NumberInput
+          <TextInput
             label="DNI"
             placeholder="30123654"
-            hideControls
+            type="number"
+            minLength={7}
+            maxLength={8}
             required
             {...getInputProps("dni")}
           />

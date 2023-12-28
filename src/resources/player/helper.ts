@@ -6,7 +6,8 @@ export const getPlayerFilename = (
   dni: string | number,
   name: string,
   lastname: string,
-) => `public/${dni}_${name}_${lastname}`;
+  type: "png" | "webp" | "jpeg" | "jpg" = "webp",
+) => `${dni}_${name}_${lastname}.${type}`;
 
 type InsertPlayerSport = {
   client: SupabaseClient<Database>;

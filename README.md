@@ -1,5 +1,9 @@
 # Supabase
+
 ### comandos
+
+- `npx supabase start` => se van ad escargar las imagenes de docker posiblemente
+  - si pregunta hay que agregar el password de la base de datos
 - `npx supabase db pull`
 - `npx supabase db dump -f supabase/seed.sql --data-only`
 - `npx supabase db reset --local`
