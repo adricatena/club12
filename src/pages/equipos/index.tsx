@@ -65,7 +65,7 @@ function Teams({
   const [searchTeam, setSearchTeam] = useState("");
   const [totalTeam, setTotalTeam] = useState(totalTeams);
   const [page, setPage] = useState(1);
-  const [amount, setAmount] = useState(1);
+  const [amount, setAmount] = useState(10);
 
   const fetchTeams = async (
     selectedSportId: string,
