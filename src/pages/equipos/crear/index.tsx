@@ -5,15 +5,9 @@ import Image from "next/image";
 function TeamSports() {
   return (
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos/crear" }]}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="flex flex-wrap justify-between">
         <ULink href="/equipos/crear/basket">
-          <div style={{ marginRight: "30px" }}>
+          <div className="mr-8">
             <Image
               src="/logo-basket.webp"
               alt="Basket"
@@ -27,7 +21,7 @@ function TeamSports() {
           </div>
         </ULink>
         <ULink href="/equipos/crear/futbol 7">
-          <div style={{ marginRight: "30px" }}>
+          <div className="mr-8">
             <Image
               src="/logo-f7.webp"
               alt="Futbol 7"
@@ -41,7 +35,7 @@ function TeamSports() {
           </div>
         </ULink>
         <ULink href="/equipos/crear/futbol 11">
-          <div style={{ marginRight: "30px" }}>
+          <div className="mr-8">
             <Image
               src="/logo-f11.webp"
               alt="Futbol 11"

@@ -99,14 +99,14 @@ function Teams({
     fetchTeams(selectedSport?.id!, page, amount);
   }, [page, amount, selectedSport]);
 
-  async function handleChangeSportSelect(selectedSportId: string) {
+  async function handleChangeSportSelect(selectedSportId: string | null) {
     setPage(1);
     setSelectedSport(
       sportsFromDb.find((sportFromDb) => sportFromDb.id === selectedSportId) ??
         null,
     );
     reset();
-    fetchTeams(selectedSportId, 1, amount);
+    fetchTeams(selectedSportId ?? "", 1, amount);
   }
 
   function handleSearchTeam(event: React.ChangeEvent<HTMLInputElement>) {
@@ -151,7 +151,7 @@ function Teams({
     <Layout breadcrumbs={[{ name: "Equipos", href: "/equipos" }]}>
       <div>
         <section className="mb-4 flex items-center justify-between">
-          <div style={{ marginRight: "20px" }}>
+          <div className="mr-5">
             <TextInput
               label="Buscar"
               placeholder="Buscar..."
@@ -164,7 +164,7 @@ function Teams({
               onChange={handleSearchTeam}
             />
           </div>
-          <div style={{ width: "200px" }}>
+          <div className="w-52">
             <Select
               label="Elegir Deporte"
               placeholder={selectedSport?.name}

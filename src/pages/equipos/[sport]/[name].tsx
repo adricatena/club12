@@ -29,7 +29,7 @@ import { useState } from "react";
 interface Props {
   sportFromDb: SportFromDb | null;
   playersFromDb: PlayerFromDb[] | null;
-  TeamFromDb: TeamFromDb | null;
+  teamFromDb: TeamFromDb | null;
   playersByTeams: PlayerFromDb[] | null;
   photoUrl: string | null;
 }
@@ -41,7 +41,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     props: {
       playersFromDb: [],
       sportFromDb: null,
-      TeamFromDb: null,
+      teamFromDb: null,
       playersByTeams: [],
       photoUrl: null,
     },
@@ -62,14 +62,15 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
     return sportNameLower === sportUrlLower;
   });
 
-  const { data: TeamsFromDb } = await TeamService.getTeams(client, {
+  const { data: teamsFromDb } = await TeamService.getTeams(client, {
     sport_id: sportFromDb?.id,
   });
   if (!sportFromDb) return emptyReturn;
 
-  const TeamFromDb = TeamsFromDb
-    ? TeamsFromDb.find((team) => team.name.toLocaleLowerCase() === nameFromUrl)
-    : null;
+  const teamFromDb =
+    teamsFromDb?.find(
+      (team) => team.name.toLocaleLowerCase() === nameFromUrl,
+    ) ?? null;
 
   const { data: playersFromDb } = await PlayerService.getPlayersSport(client, {
     sport_id: sportFromDb.id,
@@ -78,18 +79,18 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 
   const { data: playersByTeams } = await TeamService.getPlayerByTeam(
     client,
-    TeamFromDb?.id || "",
+    teamFromDb?.id || "",
   );
-  const { data: photoUrl } = await TeamService.getTeamPhotoUrl(
+  const { data: photoUrl } = TeamService.getTeamPhotoUrl(
     client,
     sportFromDb?.name || "",
-    TeamFromDb?.name || "",
+    teamFromDb?.name || "",
   );
   return {
     props: {
       playersFromDb,
       sportFromDb,
-      TeamFromDb,
+      teamFromDb,
       playersByTeams,
       photoUrl,
     },
@@ -99,7 +100,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 function UpdateTeam({
   playersFromDb,
   sportFromDb,
-  TeamFromDb,
+  teamFromDb,
   playersByTeams,
   photoUrl,
 }: Props) {
@@ -107,12 +108,12 @@ function UpdateTeam({
   const { setValues, reset, onSubmit, getInputProps, values } =
     useForm<UpdateTeam>({
       initialValues: {
-        name: TeamFromDb?.name || "",
+        name: teamFromDb?.name || "",
         sport: sportFromDb || { name: "", id: "" },
         photoSrc: photoUrl || "",
         players: [],
-        id: TeamFromDb!.id,
-        active: TeamFromDb?.active || false,
+        id: teamFromDb!.id,
+        active: teamFromDb?.active || false,
       },
       validate: {
         name: (name) => {
@@ -236,7 +237,7 @@ function UpdateTeam({
     setIsLoadingForm(false);
   }
 
-  if (!playersFromDb || !TeamFromDb)
+  if (!playersFromDb || !teamFromDb)
     return (
       <Layout>
         <section className="mx-auto text-center">
@@ -316,12 +317,7 @@ function UpdateTeam({
             />
           </div>
           <div className="flex items-center justify-center space-x-4">
-            <Paper
-              shadow="xs"
-              p="xs"
-              className="w-full"
-              style={{ minHeight: "300px", minWidth: "300px" }}
-            >
+            <Paper shadow="xs" p="xs" className="min-h-80 w-full min-w-80">
               <h2 className="mb-4 text-lg font-semibold">Jugadores</h2>
               <Input
                 placeholder="Buscar jugador"
@@ -331,7 +327,7 @@ function UpdateTeam({
                   setSearchPlayers(event.currentTarget.value)
                 }
               />
-              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+              <div className="max-h-[350px] overflow-y-auto">
                 <Table className="w-full">
                   <Table.Tbody>
                     <Table.Tr>
@@ -376,8 +372,7 @@ function UpdateTeam({
             <Paper
               shadow="xs"
               p="xs"
-              className="w-full"
-              style={{ minHeight: "300px", minWidth: "300px" }}
+              className="min-h-[300px] w-full min-w-[300px]"
             >
               <h2 className="mb-4 text-lg font-semibold">Equipo</h2>
               <Input
@@ -386,7 +381,7 @@ function UpdateTeam({
                 value={searchTeam}
                 onChange={(event) => setSearchTeam(event.currentTarget.value)}
               />
-              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+              <div className="max-h-[350px] overflow-y-auto">
                 <Table className="w-full">
                   <Table.Tbody>
                     <Table.Tr>

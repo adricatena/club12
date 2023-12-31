@@ -234,8 +234,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
             <Paper
               shadow="xs"
               p="xs"
-              className="w-full"
-              style={{ minHeight: "300px", minWidth: "300px" }}
+              className="min-h-[300px] w-full min-w-[300ppx]"
             >
               <h2 className="mb-4 text-lg font-semibold">Jugadores</h2>
               <Input
@@ -246,7 +245,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
                   setSearchPlayers(event.currentTarget.value)
                 }
               />
-              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+              <div className="max-h-[350px] overflow-y-auto">
                 <Table className="w-full">
                   <Table.Tbody>
                     <Table.Tr>
@@ -291,8 +290,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
             <Paper
               shadow="xs"
               p="xs"
-              className="w-full"
-              style={{ minHeight: "300px", minWidth: "300px" }}
+              className="min-h-[300px] w-full min-w-[300px]"
             >
               <h2 className="mb-4 text-lg font-semibold">Equipo</h2>
               <Input
@@ -301,7 +299,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
                 value={searchTeam}
                 onChange={(event) => setSearchTeam(event.currentTarget.value)}
               />
-              <div style={{ maxHeight: "350px", overflowY: "auto" }}>
+              <div className="max-h-[350px] overflow-y-auto">
                 <Table className="w-full">
                   <Table.Tbody>
                     <Table.Tr>
