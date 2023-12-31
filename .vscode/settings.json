@@ -3,5 +3,12 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
-  }
+  },
+  "cssVariables.lookupFiles": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.sass",
+    "**/*.less",
+    "node_modules/@mantine/core/styles.css"
+  ]
 }

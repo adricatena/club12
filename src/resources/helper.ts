@@ -11,5 +11,5 @@ export const uploadPhoto = async (data: UploadPhoto) => {
   const { client, filename, photo, bucket } = data;
   return await client.storage
     .from(bucket)
-    .upload(filename, photo, { upsert: true });
+    .upload(filename, photo, { upsert: true, contentType: photo.type });
 };

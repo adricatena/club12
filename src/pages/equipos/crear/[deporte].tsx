@@ -99,7 +99,6 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
   }
 
   async function handleSubmit(values: NewTeam) {
-    console.log("Datos a enviar:", values);
     setIsLoadingForm(true);
     const { ok, message } = await TeamService.createTeam(browserClient, values);
 
