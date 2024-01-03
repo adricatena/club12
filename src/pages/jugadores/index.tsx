@@ -7,7 +7,7 @@ import { ActionIcon, NumberInput, Pagination, Select } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 const DEFAULT_PAGE = 0;
 const DEFAULT_AMOUNT = 15;
@@ -52,10 +52,9 @@ export default function Players({
   page: pageFromDb,
   amount: amoubtFromDb,
 }: Props) {
+  const router = useRouter();
   const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb ?? []);
   const searchPlayerRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-
   const [totalPlayers, setTotalPlayers] = useState(totalPlayersFromDb);
   const [page, setPage] = useState(pageFromDb);
   const [amount, setAmount] = useState(amoubtFromDb);
@@ -72,6 +71,18 @@ export default function Players({
       setPlayers([]);
     }
   }
+
+  useEffect(() => {
+    setPage(1);
+    setAmount(DEFAULT_AMOUNT);
+  }, []);
+
+  useEffect(() => {
+    router.push(`/jugadores?page=${page}&amount=${amount}`, undefined, {
+      shallow: true,
+    });
+    fetchData(page, amount);
+  }, [page, amount]);
 
   async function handleSearchPlayerSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

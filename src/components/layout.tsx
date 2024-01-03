@@ -1,8 +1,10 @@
 import { navLinks } from "@/components/nav-links";
-import { NavLink, Title } from "@mantine/core";
+import { Image, NavLink, Title } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
+import NextImage from "next/image";
 import Link from "next/link";
 import { ReactNode } from "react";
+import logoClub12 from "../../public/logo-club12.webp";
 import LogoutButton from "./logout-button";
 import ULink from "./unstyled-link";
 
@@ -22,7 +24,20 @@ export default function Layout({ breadcrumbs, children }: Props) {
       <header className="col-span-2 flex items-center justify-between gap-2 border-0 border-b-2 border-solid border-gray-200 p-4">
         <span className="flex items-center gap-2">
           <ULink href="/">
-            <Title order={2}>Club 12</Title>
+            <div className="flex items-center gap-2">
+              <Image
+                component={NextImage}
+                radius="md"
+                h={60}
+                w="auto"
+                fit="contain"
+                src={logoClub12}
+                alt="logo club 12"
+              />
+              <Title order={2} className="text-xl font-bold">
+                Club 12
+              </Title>
+            </div>
           </ULink>
           {breadcrumbs
             ? breadcrumbs.map((breadcrumb) => {
