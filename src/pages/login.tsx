@@ -1,8 +1,10 @@
 import toast from "@/components/toast";
 import { browserClient } from "@/database/clients";
-import { Button, PasswordInput, TextInput, Title } from "@mantine/core";
+import { Button, Image, PasswordInput, TextInput, Title } from "@mantine/core";
+import NextImage from "next/image";
 import { useRouter } from "next/router";
 import { FormEvent, useRef, useState } from "react";
+import logoClub12 from "../../public/logo-club12.webp";
 
 export default function Login() {
   const router = useRouter();
@@ -34,6 +36,15 @@ export default function Login() {
 
   return (
     <main className="col-span-2 row-span-2 flex h-screen flex-col items-center justify-center gap-4">
+      <Image
+        component={NextImage}
+        radius="md"
+        h={170}
+        w="auto"
+        fit="contain"
+        src={logoClub12}
+        alt="logo club 12"
+      />
       <Title order={1}>Club 12</Title>
       <form
         className="flex w-full max-w-xs flex-col items-center justify-center gap-5 p-3"
