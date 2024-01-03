@@ -6,7 +6,7 @@ import { PlayerFromDb } from "@/resources/player/types";
 import { ActionIcon, NumberInput, Pagination, Select } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import type { GetServerSideProps } from "next";
-import router from "next/router";
+import { useRouter } from "next/router";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 const DEFAULT_PAGE = 0;
@@ -52,6 +52,7 @@ export default function Players({
   page: pageFromDb,
   amount: amoubtFromDb,
 }: Props) {
+  const router = useRouter();
   const [players, setPlayers] = useState<PlayerFromDb[]>(playersFromDb ?? []);
   const searchPlayerRef = useRef<HTMLInputElement>(null);
   const [totalPlayers, setTotalPlayers] = useState(totalPlayersFromDb);
