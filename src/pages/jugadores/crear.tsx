@@ -37,7 +37,6 @@ function CreatePlayer({ sportsFromDb }: Props) {
         federatedSports: [],
       },
       validate: {
-        // dni: (dni) => (dni.length > 7 ? null : "Ingrese un DNI valido"),
         cellphone: (cell) =>
           cell.length > 10 || cell.length === 0
             ? null
