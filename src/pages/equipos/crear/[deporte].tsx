@@ -20,6 +20,7 @@ import {
 import { useForm } from "@mantine/form";
 import type { GetServerSideProps } from "next";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 interface Props {
@@ -62,6 +63,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (
 };
 
 function CreateTeam({ playersFromDb, sportFromDb }: Props) {
+  const router = useRouter();
   const { setValues, reset, onSubmit, getInputProps, values } =
     useForm<NewTeam>({
       initialValues: {
@@ -107,7 +109,7 @@ function CreateTeam({ playersFromDb, sportFromDb }: Props) {
         "Equipo creado correctamente",
         `El equipo ${values.name} se creo correctamente`,
       );
-      reset();
+      router.replace("/equipos/crear");
     } else toast.error("Error creando el equipo", message);
 
     setIsLoadingForm(false);
